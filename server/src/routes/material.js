@@ -18,7 +18,7 @@ const canAccessCourseMaterials = async (user, courseId) => {
 
 // Upload material (admin only)
 materialRouter.post(
-  "/api/materials",
+  "/materials",
   userAuth,
   authorize("admin"),
   upload.single("file"),
@@ -141,7 +141,7 @@ materialRouter.get("/materials/:materialId/download", userAuth, async (req, res)
 
 // Delete material (admin only)
 materialRouter.delete(
-  "/api/materials/:materialId",
+  "/materials/:materialId",
   userAuth,
   authorize("admin"),
   async (req, res) => {

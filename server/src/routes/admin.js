@@ -64,7 +64,7 @@ adminRouter.post("/admin/users", userAuth, authorize("admin"), async (req, res) 
 // Defaults to the last `days` (default 30, max 90); pass explicit `from`/`to`
 // (YYYY-MM-DD) to override with a specific date range instead.
 adminRouter.get(
-  "/api/admin/analytics/enrollment-trend",
+  "/admin/analytics/enrollment-trend",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -118,7 +118,7 @@ const escapeCsvField = (value) => {
 };
 
 adminRouter.get(
-  "/api/admin/analytics/enrollments/export",
+  "/admin/analytics/enrollments/export",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -162,7 +162,7 @@ adminRouter.get(
 // Offline payment collection summary — fees are collected in person, this
 // aggregates what's been recorded so admins can see collected vs. pending.
 adminRouter.get(
-  "/api/admin/analytics/payments",
+  "/admin/analytics/payments",
   userAuth,
   authorize("admin"),
   async (req, res) => {

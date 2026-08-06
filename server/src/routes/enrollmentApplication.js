@@ -36,7 +36,7 @@ const ALLOWED_FIELDS = [
 // batch" are the same real-world action, so the frontend only needs one
 // button/request for both.
 enrollmentApplicationRouter.post(
-  "/api/enrollment-applications",
+  "/enrollment-applications",
   userAuth,
   authorize("student"),
   enrollmentUpload.fields([
@@ -167,7 +167,7 @@ enrollmentApplicationRouter.get("/enrollment-applications/my", userAuth, async (
 
 // List all applications (admin only), optional ?course= filter
 enrollmentApplicationRouter.get(
-  "/api/enrollment-applications",
+  "/enrollment-applications",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -232,7 +232,7 @@ enrollmentApplicationRouter.get("/enrollment-applications/:id", userAuth, async 
 
 // Update an application (admin only)
 enrollmentApplicationRouter.patch(
-  "/api/enrollment-applications/:id",
+  "/enrollment-applications/:id",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -268,7 +268,7 @@ enrollmentApplicationRouter.patch(
 
 // Delete an application (admin only) — also removes uploaded assets
 enrollmentApplicationRouter.delete(
-  "/api/enrollment-applications/:id",
+  "/enrollment-applications/:id",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -305,7 +305,7 @@ const formatDate = (date) =>
 // Download the application as a PDF matching the paper enrolment form
 // (owner or admin only). "Form No." is replaced with the student's user ID.
 enrollmentApplicationRouter.get(
-  "/api/enrollment-applications/:id/download",
+  "/enrollment-applications/:id/download",
   userAuth,
   async (req, res) => {
     try {

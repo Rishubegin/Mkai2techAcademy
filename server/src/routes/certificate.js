@@ -10,7 +10,7 @@ const authorize = require("../middlewares/authorize");
 // Issue a certificate for a student who has completed a batch (admin only).
 // Idempotent: re-issuing for the same student+batch returns the existing one.
 certificateRouter.post(
-  "/api/certificates/:batchId/:studentId",
+  "/certificates/:batchId/:studentId",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -128,7 +128,7 @@ certificateRouter.get("/certificates/verify/:certificateId", async (req, res) =>
 
 // Download the certificate as a PDF (owner or admin only)
 certificateRouter.get(
-  "/api/certificates/:certificateId/download",
+  "/certificates/:certificateId/download",
   userAuth,
   async (req, res) => {
     try {

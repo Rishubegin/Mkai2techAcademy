@@ -69,7 +69,7 @@ galleryRouter.get("/gallery/categories", async (req, res) => {
 
 // Upload a photo (admin only)
 galleryRouter.post(
-  "/api/gallery",
+  "/gallery",
   userAuth,
   authorize("admin"),
   galleryUpload.single("image"),
@@ -120,7 +120,7 @@ galleryRouter.post(
 
 // Toggle featured (admin only)
 galleryRouter.patch(
-  "/api/gallery/:id/feature",
+  "/gallery/:id/feature",
   userAuth,
   authorize("admin"),
   async (req, res) => {

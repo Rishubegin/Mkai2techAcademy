@@ -59,7 +59,7 @@ eventRouter.get("/events/stats", userAuth, authorize("admin"), async (req, res) 
 
 // Create event (admin only)
 eventRouter.post(
-  "/api/events",
+  "/events",
   userAuth,
   authorize("admin"),
   eventUpload.single("image"),
@@ -111,7 +111,7 @@ eventRouter.post(
 // Register for an event (student only) — capacity + dedup gated, same
 // pattern as Batch self-enroll.
 eventRouter.post(
-  "/api/events/:id/register",
+  "/events/:id/register",
   userAuth,
   authorize("student"),
   async (req, res) => {
@@ -156,7 +156,7 @@ eventRouter.post(
 
 // Unregister from an event (student only)
 eventRouter.delete(
-  "/api/events/:id/register",
+  "/events/:id/register",
   userAuth,
   authorize("student"),
   async (req, res) => {

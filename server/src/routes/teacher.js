@@ -288,7 +288,7 @@ teacherRouter.patch("/teacher-profiles/:profileId", userAuth, async (req, res) =
 
 // Delete profile (admin only)
 teacherRouter.delete(
-  "/api/teacher-profiles/:profileId",
+  "/teacher-profiles/:profileId",
   userAuth,
   authorize("admin"),
   async (req, res) => {

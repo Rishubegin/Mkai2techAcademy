@@ -283,7 +283,7 @@ batchRouter.post("/batches/:id/enroll", userAuth, authorize("student"), async (r
 
 // Self-unenroll (student removes themselves from a batch)
 batchRouter.delete(
-  "/api/batches/:id/enroll",
+  "/batches/:id/enroll",
   userAuth,
   authorize("student"),
   async (req, res) => {
@@ -315,7 +315,7 @@ batchRouter.delete(
 
 // Update batch status (admin only)
 batchRouter.patch(
-  "/api/batches/:id/status",
+  "/batches/:id/status",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -368,7 +368,7 @@ batchRouter.patch(
 
 // Add student to batch (admin only)
 batchRouter.post(
-  "/api/batches/:id/students",
+  "/batches/:id/students",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -413,7 +413,7 @@ batchRouter.post(
 
 // Remove student from batch (admin only)
 batchRouter.delete(
-  "/api/batches/:id/students/:studentId",
+  "/batches/:id/students/:studentId",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -447,7 +447,7 @@ batchRouter.delete(
 // Record/update a student's offline payment for a batch (admin only) —
 // fees are collected in person; this just records what the admin was told.
 batchRouter.patch(
-  "/api/batches/:id/students/:studentId/payment",
+  "/batches/:id/students/:studentId/payment",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -507,7 +507,7 @@ batchRouter.patch(
 // as reported by the instructor). Reaching 100% stamps completedAt, which
 // is what makes the student eligible for a certificate.
 batchRouter.patch(
-  "/api/batches/:id/students/:studentId/progress",
+  "/batches/:id/students/:studentId/progress",
   userAuth,
   authorize("admin"),
   async (req, res) => {

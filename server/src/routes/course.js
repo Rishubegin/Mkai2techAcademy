@@ -243,7 +243,7 @@ courseRouter.get("/courses", async (req, res) => {
 
 // Toggle featured flag (admin only)
 courseRouter.patch(
-  "/api/courses/:id/feature",
+  "/courses/:id/feature",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -274,7 +274,7 @@ courseRouter.patch(
 
 // Update course image (admin only)
 courseRouter.patch(
-  "/api/courses/:id/image",
+  "/courses/:id/image",
   userAuth,
   authorize("admin"),
   async (req, res) => {
@@ -312,7 +312,7 @@ courseRouter.patch(
 
 // Update syllabus (admin only)
 courseRouter.patch(
-  "/api/courses/:id/syllabus",
+  "/courses/:id/syllabus",
   userAuth,
   authorize("admin"),
   async (req, res) => {

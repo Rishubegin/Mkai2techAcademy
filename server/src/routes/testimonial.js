@@ -8,7 +8,7 @@ const { isRequestFromAdmin } = require("../utils/optionalAdmin");
 
 // Submit a testimonial (student) — pending approval by default
 testimonialRouter.post(
-  "/api/testimonials",
+  "/testimonials",
   userAuth,
   authorize("student"),
   async (req, res) => {
@@ -94,7 +94,7 @@ testimonialRouter.get("/testimonials", async (req, res) => {
 
 // Approve/reject/feature (admin only)
 testimonialRouter.patch(
-  "/api/testimonials/:id",
+  "/testimonials/:id",
   userAuth,
   authorize("admin"),
   async (req, res) => {

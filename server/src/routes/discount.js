@@ -66,7 +66,7 @@ discountRouter.get("/discounts", userAuth, authorize("admin"), async (req, res) 
 // Validate a discount code against an amount (admin only — used while
 // recording an offline payment, not a public checkout endpoint)
 discountRouter.get(
-  "/api/discounts/validate",
+  "/discounts/validate",
   userAuth,
   authorize("admin"),
   async (req, res) => {

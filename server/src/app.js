@@ -15,9 +15,16 @@ const sanitizeBody = require("./middlewares/sanitize");
 // (avatars) directly from this API's origin (:7777) — helmet's default
 // "same-origin" policy would silently block those <img> loads.
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mkai2tech-academy-gg6d.vercel.app",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   }),
 );

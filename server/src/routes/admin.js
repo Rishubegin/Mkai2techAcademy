@@ -9,7 +9,7 @@ const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
 // Admin creates a user directly (student/teacher/admin), bypassing public signup
-adminRouter.post("/api/admin/users", userAuth, authorize("admin"), async (req, res) => {
+adminRouter.post("/admin/users", userAuth, authorize("admin"), async (req, res) => {
   try {
     const { name, email, phone, password, role } = req.body;
 

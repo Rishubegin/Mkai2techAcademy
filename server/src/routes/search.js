@@ -5,7 +5,7 @@ const User = require("../models/user");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
-searchRouter.get("/api/users/search", userAuth, authorize("admin"), async (req, res) => {
+searchRouter.get("/users/search", userAuth, authorize("admin"), async (req, res) => {
   const query = req.query;
 
   try {
@@ -45,7 +45,7 @@ searchRouter.get("/api/users/search", userAuth, authorize("admin"), async (req, 
   }
 });
 
-searchRouter.get("/api/users/:id", userAuth, async (req, res) => {
+searchRouter.get("/users/:id", userAuth, async (req, res) => {
   const id = req.params.id;
 
   try {
@@ -73,7 +73,7 @@ searchRouter.get("/api/users/:id", userAuth, async (req, res) => {
   }
 });
 
-searchRouter.get("/api/dashboard/users/count", userAuth, authorize("admin"), async (req, res) => {
+searchRouter.get("/dashboard/users/count", userAuth, authorize("admin"), async (req, res) => {
   try {
     const students = await User.countDocuments({ role: "student" });
     const teachers = await User.countDocuments({ role: "teacher" });

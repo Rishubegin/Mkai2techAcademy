@@ -49,7 +49,7 @@ testimonialRouter.post(
 );
 
 // List testimonials — public sees only approved; admin can see all via ?all=true
-testimonialRouter.get("/api/testimonials", async (req, res) => {
+testimonialRouter.get("/testimonials", async (req, res) => {
   try {
     const wantsAll = req.query.all === "true";
     const isAdminRequest = wantsAll && (await isRequestFromAdmin(req));
@@ -133,7 +133,7 @@ testimonialRouter.patch(
 );
 
 // Delete (admin or owner)
-testimonialRouter.delete("/api/testimonials/:id", userAuth, async (req, res) => {
+testimonialRouter.delete("/testimonials/:id", userAuth, async (req, res) => {
   try {
     const testimonial = await Testimonial.findById(req.params.id);
 

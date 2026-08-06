@@ -17,7 +17,7 @@ const PUBLIC_STUDENT_FIELD_EXCLUSIONS =
   "-students.completedAt";
 
 // Create batch (admin only)
-batchRouter.post("/api/batches", userAuth, authorize("admin"), async (req, res) => {
+batchRouter.post("/batches", userAuth, authorize("admin"), async (req, res) => {
   try {
     const { batchName, course, teacher, capacity, status, startDate, endDate } = req.body;
 
@@ -49,7 +49,7 @@ batchRouter.post("/api/batches", userAuth, authorize("admin"), async (req, res) 
 });
 
 // Stats
-batchRouter.get("/api/batches/stats", userAuth, authorize("admin"), async (req, res) => {
+batchRouter.get("/batches/stats", userAuth, authorize("admin"), async (req, res) => {
   try {
     const [totalBatches, running, upcoming, completed] = await Promise.all([
       Batch.countDocuments(),
@@ -77,7 +77,7 @@ batchRouter.get("/api/batches/stats", userAuth, authorize("admin"), async (req, 
 
 // Batches for a given course (public — never expose per-student financial
 // or progress data here, only used for seat counts and "am I enrolled")
-batchRouter.get("/api/courses/:courseId/batches", async (req, res) => {
+batchRouter.get("/courses/:courseId/batches", async (req, res) => {
   try {
     const batches = await Batch.find({ course: req.params.courseId }).select(
       PUBLIC_STUDENT_FIELD_EXCLUSIONS,
@@ -98,7 +98,7 @@ batchRouter.get("/api/courses/:courseId/batches", async (req, res) => {
 });
 
 // Batches for a given teacher (public — same exclusion as above)
-batchRouter.get("/api/teachers/:teacherId/batches", async (req, res) => {
+batchRouter.get("/teachers/:teacherId/batches", async (req, res) => {
   try {
     const batches = await Batch.find({ teacher: req.params.teacherId }).select(
       PUBLIC_STUDENT_FIELD_EXCLUSIONS,
@@ -119,7 +119,7 @@ batchRouter.get("/api/teachers/:teacherId/batches", async (req, res) => {
 });
 
 // Batches for a given student
-batchRouter.get("/api/students/:studentId/batches", userAuth, async (req, res) => {
+batchRouter.get("/students/:studentId/batches", userAuth, async (req, res) => {
   try {
     const isSelf = req.params.studentId === req.user._id.toString();
     const isAdmin = req.user.role === "admin";
@@ -163,7 +163,7 @@ batchRouter.get("/api/students/:studentId/batches", userAuth, async (req, res) =
 });
 
 // List all batches (filters + pagination)
-batchRouter.get("/api/batches", userAuth, authorize("admin"), async (req, res) => {
+batchRouter.get("/batches", userAuth, authorize("admin"), async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, parseInt(req.query.limit) || 10);
@@ -209,7 +209,7 @@ batchRouter.get("/api/batches", userAuth, authorize("admin"), async (req, res) =
 });
 
 // Remaining seats
-batchRouter.get("/api/batches/:id/seats", async (req, res) => {
+batchRouter.get("/batches/:id/seats", async (req, res) => {
   try {
     const batch = await Batch.findById(req.params.id);
 
@@ -236,7 +236,7 @@ batchRouter.get("/api/batches/:id/seats", async (req, res) => {
 });
 
 // Self-enroll (student enrolls themselves in a batch)
-batchRouter.post("/api/batches/:id/enroll", userAuth, authorize("student"), async (req, res) => {
+batchRouter.post("/batches/:id/enroll", userAuth, authorize("student"), async (req, res) => {
   try {
     const batch = await Batch.findById(req.params.id).populate("course", "title");
 
@@ -561,7 +561,7 @@ batchRouter.patch(
 // Get single batch — full roster including payment/progress, so admin only
 // (nothing on the frontend calls this for students; they use
 // /api/students/:studentId/batches instead, which is self-filtered)
-batchRouter.get("/api/batches/:id", userAuth, authorize("admin"), async (req, res) => {
+batchRouter.get("/batches/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const batch = await Batch.findById(req.params.id)
       .populate("course", "title category mode")
@@ -586,7 +586,7 @@ batchRouter.get("/api/batches/:id", userAuth, authorize("admin"), async (req, re
 });
 
 // Update batch (admin only)
-batchRouter.patch("/api/batches/:id", userAuth, authorize("admin"), async (req, res) => {
+batchRouter.patch("/batches/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const ALLOWED_UPDATES = [
       "batchName",
@@ -630,7 +630,7 @@ batchRouter.patch("/api/batches/:id", userAuth, authorize("admin"), async (req, 
 });
 
 // Delete batch (admin only)
-batchRouter.delete("/api/batches/:id", userAuth, authorize("admin"), async (req, res) => {
+batchRouter.delete("/batches/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const batch = await Batch.findByIdAndDelete(req.params.id);
 

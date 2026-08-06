@@ -144,7 +144,7 @@ enrollmentApplicationRouter.post(
 );
 
 // List the logged-in student's own applications
-enrollmentApplicationRouter.get("/api/enrollment-applications/my", userAuth, async (req, res) => {
+enrollmentApplicationRouter.get("/enrollment-applications/my", userAuth, async (req, res) => {
   try {
     const applications = await EnrollmentApplication.find({ student: req.user._id })
       .populate("course", "title")
@@ -197,7 +197,7 @@ enrollmentApplicationRouter.get(
 );
 
 // Get a single application (owner or admin)
-enrollmentApplicationRouter.get("/api/enrollment-applications/:id", userAuth, async (req, res) => {
+enrollmentApplicationRouter.get("/enrollment-applications/:id", userAuth, async (req, res) => {
   try {
     const application = await EnrollmentApplication.findById(req.params.id)
       .populate("student", "name email phone")

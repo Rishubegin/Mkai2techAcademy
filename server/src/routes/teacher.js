@@ -7,7 +7,7 @@ const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
 // Create teacher profile (admin, or the teacher creating their own profile)
-teacherRouter.post("/api/teacher-profiles", userAuth, async (req, res) => {
+teacherRouter.post("/teacher-profiles", userAuth, async (req, res) => {
   try {
     const { user, qualification, experience, experienceYears, specialization, bio, photo, socialLinks } =
       req.body;
@@ -61,7 +61,7 @@ teacherRouter.post("/api/teacher-profiles", userAuth, async (req, res) => {
 });
 
 // Stats
-teacherRouter.get("/api/teacher-profiles/stats", async (req, res) => {
+teacherRouter.get("/teacher-profiles/stats", async (req, res) => {
   try {
     const totalTeachers = await TeacherProfile.countDocuments();
     const [avgResult] = await TeacherProfile.aggregate([
@@ -84,7 +84,7 @@ teacherRouter.get("/api/teacher-profiles/stats", async (req, res) => {
 });
 
 // Search teachers (qualification, bio, specialization)
-teacherRouter.get("/api/teacher-profiles/search", async (req, res) => {
+teacherRouter.get("/teacher-profiles/search", async (req, res) => {
   try {
     const { search } = req.query;
 
@@ -113,7 +113,7 @@ teacherRouter.get("/api/teacher-profiles/search", async (req, res) => {
 });
 
 // Get profile by linked user id
-teacherRouter.get("/api/teacher-profiles/user/:userId", async (req, res) => {
+teacherRouter.get("/teacher-profiles/user/:userId", async (req, res) => {
   try {
     const profile = await TeacherProfile.findOne({
       user: req.params.userId,
@@ -138,7 +138,7 @@ teacherRouter.get("/api/teacher-profiles/user/:userId", async (req, res) => {
 });
 
 // List all teacher profiles (with optional specialization/experience filters)
-teacherRouter.get("/api/teacher-profiles", async (req, res) => {
+teacherRouter.get("/teacher-profiles", async (req, res) => {
   try {
     const filter = {};
 
@@ -165,7 +165,7 @@ teacherRouter.get("/api/teacher-profiles", async (req, res) => {
 });
 
 // Update photo (owner or admin)
-teacherRouter.patch("/api/teacher-profiles/:profileId/photo", userAuth, async (req, res) => {
+teacherRouter.patch("/teacher-profiles/:profileId/photo", userAuth, async (req, res) => {
   try {
     const { photo } = req.body;
 
@@ -207,7 +207,7 @@ teacherRouter.patch("/api/teacher-profiles/:profileId/photo", userAuth, async (r
 });
 
 // Get single profile
-teacherRouter.get("/api/teacher-profiles/:profileId", async (req, res) => {
+teacherRouter.get("/teacher-profiles/:profileId", async (req, res) => {
   try {
     const profile = await TeacherProfile.findById(req.params.profileId).populate(
       "user",
@@ -233,7 +233,7 @@ teacherRouter.get("/api/teacher-profiles/:profileId", async (req, res) => {
 });
 
 // Update profile (owner or admin)
-teacherRouter.patch("/api/teacher-profiles/:profileId", userAuth, async (req, res) => {
+teacherRouter.patch("/teacher-profiles/:profileId", userAuth, async (req, res) => {
   try {
     const profile = await TeacherProfile.findById(req.params.profileId);
 

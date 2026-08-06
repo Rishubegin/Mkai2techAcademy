@@ -8,7 +8,7 @@ const { galleryUpload } = require("../middlewares/galleryUpload");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 // List gallery photos (public), optional ?category= filter
-galleryRouter.get("/api/gallery", async (req, res) => {
+galleryRouter.get("/gallery", async (req, res) => {
   try {
     const filter = {};
     if (req.query.category) filter.category = req.query.category;
@@ -30,7 +30,7 @@ galleryRouter.get("/api/gallery", async (req, res) => {
 });
 
 // Featured photos (public) — for homepage
-galleryRouter.get("/api/gallery/featured", async (req, res) => {
+galleryRouter.get("/gallery/featured", async (req, res) => {
   try {
     const photos = await Gallery.find({ isFeatured: true }).sort({ createdAt: -1 }).limit(8);
 
@@ -49,7 +49,7 @@ galleryRouter.get("/api/gallery/featured", async (req, res) => {
 });
 
 // Distinct categories (public) — for filter UI
-galleryRouter.get("/api/gallery/categories", async (req, res) => {
+galleryRouter.get("/gallery/categories", async (req, res) => {
   try {
     const categories = await Gallery.distinct("category");
 
@@ -150,7 +150,7 @@ galleryRouter.patch(
 );
 
 // Delete a photo (admin only) — also removes the asset from Cloudinary
-galleryRouter.delete("/api/gallery/:id", userAuth, authorize("admin"), async (req, res) => {
+galleryRouter.delete("/gallery/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const photo = await Gallery.findByIdAndDelete(req.params.id);
 

@@ -68,7 +68,7 @@ materialRouter.post(
 );
 
 // Get materials for a course (enrolled students or admin only)
-materialRouter.get("/api/materials/course/:courseId", userAuth, async (req, res) => {
+materialRouter.get("/materials/course/:courseId", userAuth, async (req, res) => {
   try {
     const allowed = await canAccessCourseMaterials(req.user, req.params.courseId);
 
@@ -98,7 +98,7 @@ materialRouter.get("/api/materials/course/:courseId", userAuth, async (req, res)
 });
 
 // Download a material (enrolled students or admin only)
-materialRouter.get("/api/materials/:materialId/download", userAuth, async (req, res) => {
+materialRouter.get("/materials/:materialId/download", userAuth, async (req, res) => {
   try {
     const material = await Material.findById(req.params.materialId);
 

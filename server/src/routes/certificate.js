@@ -70,7 +70,7 @@ certificateRouter.post(
 );
 
 // List the logged-in student's own certificates
-certificateRouter.get("/api/certificates/my", userAuth, async (req, res) => {
+certificateRouter.get("/certificates/my", userAuth, async (req, res) => {
   try {
     const certificates = await Certificate.find({ student: req.user._id })
       .populate("course", "title category")
@@ -92,7 +92,7 @@ certificateRouter.get("/api/certificates/my", userAuth, async (req, res) => {
 
 // Public verification — deliberately returns only non-sensitive fields
 // (no email/phone), so this can be safely shared as a public link.
-certificateRouter.get("/api/certificates/verify/:certificateId", async (req, res) => {
+certificateRouter.get("/certificates/verify/:certificateId", async (req, res) => {
   try {
     const certificate = await Certificate.findOne({
       certificateId: req.params.certificateId,

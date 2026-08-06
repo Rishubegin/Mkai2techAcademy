@@ -26,6 +26,8 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -106,26 +108,26 @@ const discountRouter = require("./routes/discount");
 const certificateRouter = require("./routes/certificate");
 const enrollmentApplicationRouter = require("./routes/enrollmentApplication");
 
-app.use("/", authRouter);
-app.use("/", deleteRouter);
-app.use("/", reqRouter);
-app.use("/", searchRouter);
-app.use("/", updateRouter);
-app.use("/", courseRouter);
-app.use("/", teacherRouter);
-app.use("/", batchRouter);
-app.use("/", contactRouter);
-app.use("/", adminRouter);
-app.use("/", materialRouter);
-app.use("/", testimonialRouter);
-app.use("/", reviewRouter);
-app.use("/", faqRouter);
-app.use("/", galleryRouter);
-app.use("/", eventRouter);
-app.use("/", noticeRouter);
-app.use("/", discountRouter);
-app.use("/", certificateRouter);
-app.use("/", enrollmentApplicationRouter);
+app.use("/api/auth", authRouter);
+app.use("/api", deleteRouter);
+app.use("/api", reqRouter);
+app.use("/api", searchRouter);
+app.use("/api", updateRouter);
+app.use("/api", courseRouter);
+app.use("/api", teacherRouter);
+app.use("/api", batchRouter);
+app.use("/api/contact", contactRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api", materialRouter);
+app.use("/api", testimonialRouter);
+app.use("/api", reviewRouter);
+app.use("/api", faqRouter);
+app.use("/api", galleryRouter);
+app.use("/api", eventRouter);
+app.use("/api", noticeRouter);
+app.use("/api", discountRouter);
+app.use("/api", certificateRouter);
+app.use("/api", enrollmentApplicationRouter);
 
 // 404 handler
 app.use((req, res) => {

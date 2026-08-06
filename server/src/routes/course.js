@@ -32,7 +32,7 @@ const buildCourseFilter = (query) => {
 };
 
 // Create course (admin only)
-courseRouter.post("/api/courses", userAuth, authorize("admin"), async (req, res) => {
+courseRouter.post("/courses", userAuth, authorize("admin"), async (req, res) => {
   try {
     const {
       title,
@@ -76,7 +76,7 @@ courseRouter.post("/api/courses", userAuth, authorize("admin"), async (req, res)
 });
 
 // Featured courses
-courseRouter.get("/api/courses/featured", async (req, res) => {
+courseRouter.get("/courses/featured", async (req, res) => {
   try {
     const courses = await Course.find({ isFeatured: true }).populate(
       "instructor",
@@ -98,7 +98,7 @@ courseRouter.get("/api/courses/featured", async (req, res) => {
 });
 
 // Distinct categories
-courseRouter.get("/api/courses/categories", async (req, res) => {
+courseRouter.get("/courses/categories", async (req, res) => {
   try {
     const categories = await Course.distinct("category");
 
@@ -117,7 +117,7 @@ courseRouter.get("/api/courses/categories", async (req, res) => {
 });
 
 // Dashboard stats
-courseRouter.get("/api/courses/stats", userAuth, authorize("admin"), async (req, res) => {
+courseRouter.get("/courses/stats", userAuth, authorize("admin"), async (req, res) => {
   try {
     const [totalCourses, featuredCourses, offlineCourses, onlineCourses, hybridCourses] =
       await Promise.all([
@@ -147,7 +147,7 @@ courseRouter.get("/api/courses/stats", userAuth, authorize("admin"), async (req,
 });
 
 // Search courses by keyword (title/description)
-courseRouter.get("/api/courses/search", async (req, res) => {
+courseRouter.get("/courses/search", async (req, res) => {
   try {
     const { keyword } = req.query;
 
@@ -172,7 +172,7 @@ courseRouter.get("/api/courses/search", async (req, res) => {
 });
 
 // Courses by category (path param variant)
-courseRouter.get("/api/courses/category/:category", async (req, res) => {
+courseRouter.get("/courses/category/:category", async (req, res) => {
   try {
     const courses = await Course.find({ category: req.params.category });
 
@@ -191,7 +191,7 @@ courseRouter.get("/api/courses/category/:category", async (req, res) => {
 });
 
 // Courses by instructor
-courseRouter.get("/api/courses/instructor/:teacherId", async (req, res) => {
+courseRouter.get("/courses/instructor/:teacherId", async (req, res) => {
   try {
     const courses = await Course.find({ instructor: req.params.teacherId });
 
@@ -210,7 +210,7 @@ courseRouter.get("/api/courses/instructor/:teacherId", async (req, res) => {
 });
 
 // List all courses (filters + pagination)
-courseRouter.get("/api/courses", async (req, res) => {
+courseRouter.get("/courses", async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, parseInt(req.query.limit) || 10);
@@ -349,7 +349,7 @@ courseRouter.patch(
 );
 
 // Get single course
-courseRouter.get("/api/courses/:id", async (req, res) => {
+courseRouter.get("/courses/:id", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id).populate({
       path: "instructor",
@@ -376,7 +376,7 @@ courseRouter.get("/api/courses/:id", async (req, res) => {
 });
 
 // Update course (admin only)
-courseRouter.patch("/api/courses/:id", userAuth, authorize("admin"), async (req, res) => {
+courseRouter.patch("/courses/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const ALLOWED_UPDATES = [
       "title",
@@ -423,7 +423,7 @@ courseRouter.patch("/api/courses/:id", userAuth, authorize("admin"), async (req,
 });
 
 // Delete course (admin only)
-courseRouter.delete("/api/courses/:id", userAuth, authorize("admin"), async (req, res) => {
+courseRouter.delete("/courses/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const course = await Course.findByIdAndDelete(req.params.id);
 

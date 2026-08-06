@@ -8,7 +8,7 @@ const authorize = require("../middlewares/authorize");
 const { isEnrolledInCourse } = require("../utils/enrollment");
 
 // Create a review (must be enrolled in the course)
-reviewRouter.post("/api/reviews", userAuth, authorize("student"), async (req, res) => {
+reviewRouter.post("/reviews", userAuth, authorize("student"), async (req, res) => {
   try {
     const { courseId, rating, comment } = req.body;
 
@@ -57,7 +57,7 @@ reviewRouter.post("/api/reviews", userAuth, authorize("student"), async (req, re
 });
 
 // Get reviews for a course (public) + average rating
-reviewRouter.get("/api/reviews/course/:courseId", async (req, res) => {
+reviewRouter.get("/reviews/course/:courseId", async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(50, parseInt(req.query.limit) || 10);
@@ -96,7 +96,7 @@ reviewRouter.get("/api/reviews/course/:courseId", async (req, res) => {
 });
 
 // Update own review
-reviewRouter.patch("/api/reviews/:id", userAuth, async (req, res) => {
+reviewRouter.patch("/reviews/:id", userAuth, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
 
@@ -136,7 +136,7 @@ reviewRouter.patch("/api/reviews/:id", userAuth, async (req, res) => {
 });
 
 // Delete review (owner or admin)
-reviewRouter.delete("/api/reviews/:id", userAuth, async (req, res) => {
+reviewRouter.delete("/reviews/:id", userAuth, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
 

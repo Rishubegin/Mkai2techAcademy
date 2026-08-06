@@ -8,7 +8,7 @@ const { eventUpload } = require("../middlewares/eventUpload");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 // List events (public) — ?upcoming=true / ?past=true filter by date
-eventRouter.get("/api/events", async (req, res) => {
+eventRouter.get("/events", async (req, res) => {
   try {
     const filter = {};
     const now = new Date();
@@ -32,7 +32,7 @@ eventRouter.get("/api/events", async (req, res) => {
 });
 
 // Stats (admin only)
-eventRouter.get("/api/events/stats", userAuth, authorize("admin"), async (req, res) => {
+eventRouter.get("/events/stats", userAuth, authorize("admin"), async (req, res) => {
   try {
     const now = new Date();
     const [totalEvents, upcoming, past] = await Promise.all([
@@ -187,7 +187,7 @@ eventRouter.delete(
 );
 
 // Get single event (public)
-eventRouter.get("/api/events/:id", async (req, res) => {
+eventRouter.get("/events/:id", async (req, res) => {
   try {
     const event = await Event.findById(req.params.id).populate(
       "attendees.student",
@@ -213,7 +213,7 @@ eventRouter.get("/api/events/:id", async (req, res) => {
 });
 
 // Update event (admin only)
-eventRouter.patch("/api/events/:id", userAuth, authorize("admin"), async (req, res) => {
+eventRouter.patch("/events/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const ALLOWED_UPDATES = [
       "title",
@@ -256,7 +256,7 @@ eventRouter.patch("/api/events/:id", userAuth, authorize("admin"), async (req, r
 });
 
 // Delete event (admin only) — also removes the image from Cloudinary
-eventRouter.delete("/api/events/:id", userAuth, authorize("admin"), async (req, res) => {
+eventRouter.delete("/events/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.id);
 

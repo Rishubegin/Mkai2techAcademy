@@ -7,7 +7,7 @@ const authorize = require("../middlewares/authorize");
 const { isRequestFromAdmin } = require("../utils/optionalAdmin");
 
 // List FAQs (public sees only active; admin can see all via ?all=true)
-faqRouter.get("/api/faqs", async (req, res) => {
+faqRouter.get("/faqs", async (req, res) => {
   try {
     const wantsAll = req.query.all === "true";
     const isAdminRequest = wantsAll && (await isRequestFromAdmin(req));
@@ -39,7 +39,7 @@ faqRouter.get("/api/faqs", async (req, res) => {
 });
 
 // Create FAQ (admin only)
-faqRouter.post("/api/faqs", userAuth, authorize("admin"), async (req, res) => {
+faqRouter.post("/faqs", userAuth, authorize("admin"), async (req, res) => {
   try {
     const { question, answer, category, course, displayOrder } = req.body;
 
@@ -60,7 +60,7 @@ faqRouter.post("/api/faqs", userAuth, authorize("admin"), async (req, res) => {
 });
 
 // Mark as helpful (public)
-faqRouter.post("/api/faqs/:id/helpful", async (req, res) => {
+faqRouter.post("/faqs/:id/helpful", async (req, res) => {
   try {
     const faq = await FAQ.findByIdAndUpdate(
       req.params.id,
@@ -87,7 +87,7 @@ faqRouter.post("/api/faqs/:id/helpful", async (req, res) => {
 });
 
 // Get single FAQ (public) — also increments view count
-faqRouter.get("/api/faqs/:id", async (req, res) => {
+faqRouter.get("/faqs/:id", async (req, res) => {
   try {
     const faq = await FAQ.findByIdAndUpdate(
       req.params.id,
@@ -114,7 +114,7 @@ faqRouter.get("/api/faqs/:id", async (req, res) => {
 });
 
 // Update FAQ (admin only)
-faqRouter.patch("/api/faqs/:id", userAuth, authorize("admin"), async (req, res) => {
+faqRouter.patch("/faqs/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const ALLOWED_UPDATES = [
       "question",
@@ -155,7 +155,7 @@ faqRouter.patch("/api/faqs/:id", userAuth, authorize("admin"), async (req, res) 
 });
 
 // Delete FAQ (admin only)
-faqRouter.delete("/api/faqs/:id", userAuth, authorize("admin"), async (req, res) => {
+faqRouter.delete("/faqs/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const faq = await FAQ.findByIdAndDelete(req.params.id);
 

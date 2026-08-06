@@ -9,7 +9,7 @@ const authorize = require("../middlewares/authorize");
 // req.user.role to filter them. Non-admins always get only active,
 // non-expired notices targeted at "all" or their own role. Admins can pass
 // ?all=true to see everything (including expired/inactive) for management.
-noticeRouter.get("/api/notices", userAuth, async (req, res) => {
+noticeRouter.get("/notices", userAuth, async (req, res) => {
   try {
     const wantsAll = req.query.all === "true";
 
@@ -47,7 +47,7 @@ noticeRouter.get("/api/notices", userAuth, async (req, res) => {
 });
 
 // Create notice (admin only)
-noticeRouter.post("/api/notices", userAuth, authorize("admin"), async (req, res) => {
+noticeRouter.post("/notices", userAuth, authorize("admin"), async (req, res) => {
   try {
     const { title, message, targetRole, expiryDate, isActive } = req.body;
 
@@ -75,7 +75,7 @@ noticeRouter.post("/api/notices", userAuth, authorize("admin"), async (req, res)
 });
 
 // Update notice (admin only)
-noticeRouter.patch("/api/notices/:id", userAuth, authorize("admin"), async (req, res) => {
+noticeRouter.patch("/notices/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const ALLOWED_UPDATES = ["title", "message", "targetRole", "expiryDate", "isActive"];
     const isUpdateAllowed = Object.keys(req.body).every((key) =>
@@ -109,7 +109,7 @@ noticeRouter.patch("/api/notices/:id", userAuth, authorize("admin"), async (req,
 });
 
 // Delete notice (admin only)
-noticeRouter.delete("/api/notices/:id", userAuth, authorize("admin"), async (req, res) => {
+noticeRouter.delete("/notices/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const notice = await Notice.findByIdAndDelete(req.params.id);
 

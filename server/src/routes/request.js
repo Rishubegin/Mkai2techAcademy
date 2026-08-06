@@ -6,7 +6,7 @@ const authorize = require("../middlewares/authorize");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-reqRouter.get("/api/users/me", userAuth, (req, res) => {
+reqRouter.get("/users/me", userAuth, (req, res) => {
   try {
     const user = req.user;
 
@@ -23,7 +23,7 @@ reqRouter.get("/api/users/me", userAuth, (req, res) => {
   }
 });
 
-reqRouter.get("/api/users", userAuth, authorize("admin"), async (req, res) => {
+reqRouter.get("/users", userAuth, authorize("admin"), async (req, res) => {
   try {
     const users = await User.find();
 
@@ -43,7 +43,7 @@ reqRouter.get("/api/users", userAuth, authorize("admin"), async (req, res) => {
   }
 });
 
-reqRouter.post("/api/users/verify-password", userAuth, async (req, res) => {
+reqRouter.post("/users/verify-password", userAuth, async (req, res) => {
   const { password } = req.body;
   const { _id } = req.user;
 

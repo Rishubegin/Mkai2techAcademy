@@ -7,7 +7,7 @@ const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
 // Submit contact form (public)
-contactRouter.post("/api/contact", async (req, res) => {
+contactRouter.post("/contact", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
 
@@ -39,7 +39,7 @@ contactRouter.post("/api/contact", async (req, res) => {
 });
 
 // List submissions (admin only)
-contactRouter.get("/api/contact", userAuth, authorize("admin"), async (req, res) => {
+contactRouter.get("/contact", userAuth, authorize("admin"), async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, parseInt(req.query.limit) || 20);
@@ -69,7 +69,7 @@ contactRouter.get("/api/contact", userAuth, authorize("admin"), async (req, res)
 });
 
 // Update status (admin only)
-contactRouter.patch("/api/contact/:id", userAuth, authorize("admin"), async (req, res) => {
+contactRouter.patch("/contact/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const { status } = req.body;
     const ALLOWED_STATUSES = ["new", "responded", "archived"];

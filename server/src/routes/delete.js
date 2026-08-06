@@ -5,7 +5,7 @@ const User = require("../models/user");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
-deleteRouter.delete("/api/users/:id", userAuth, authorize("admin"), async (req, res) => {
+deleteRouter.delete("/users/:id", userAuth, authorize("admin"), async (req, res) => {
   const { id } = req.params;
 
   try {

@@ -6,7 +6,7 @@ const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
 // Create discount code (admin only)
-discountRouter.post("/api/discounts", userAuth, authorize("admin"), async (req, res) => {
+discountRouter.post("/discounts", userAuth, authorize("admin"), async (req, res) => {
   try {
     const { code, type, value, description, expiresAt } = req.body;
 
@@ -45,7 +45,7 @@ discountRouter.post("/api/discounts", userAuth, authorize("admin"), async (req, 
 });
 
 // List discount codes (admin only)
-discountRouter.get("/api/discounts", userAuth, authorize("admin"), async (req, res) => {
+discountRouter.get("/discounts", userAuth, authorize("admin"), async (req, res) => {
   try {
     const discounts = await DiscountCode.find().sort({ createdAt: -1 });
 
@@ -107,7 +107,7 @@ discountRouter.get(
 );
 
 // Update discount code (admin only)
-discountRouter.patch("/api/discounts/:id", userAuth, authorize("admin"), async (req, res) => {
+discountRouter.patch("/discounts/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const ALLOWED_UPDATES = ["type", "value", "description", "isActive", "expiresAt"];
     const isUpdateAllowed = Object.keys(req.body).every((key) =>
@@ -142,7 +142,7 @@ discountRouter.patch("/api/discounts/:id", userAuth, authorize("admin"), async (
 });
 
 // Delete discount code (admin only)
-discountRouter.delete("/api/discounts/:id", userAuth, authorize("admin"), async (req, res) => {
+discountRouter.delete("/discounts/:id", userAuth, authorize("admin"), async (req, res) => {
   try {
     const discount = await DiscountCode.findByIdAndDelete(req.params.id);
 

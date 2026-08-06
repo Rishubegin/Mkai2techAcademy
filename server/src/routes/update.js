@@ -11,7 +11,7 @@ const { uploadBuffer } = require("../utils/cloudinaryUpload");
 
 const bcrypt = require("bcrypt");
 
-updateRouter.patch("/api/users/change-password", userAuth, async (req, res) => {
+updateRouter.patch("/users/change-password", userAuth, async (req, res) => {
   const { newPassword } = req.body;
   const { _id } = req.user;
 
@@ -55,7 +55,7 @@ updateRouter.patch("/api/users/change-password", userAuth, async (req, res) => {
   }
 });
 
-updateRouter.patch("/api/users/:id/verify", userAuth, authorize("admin"), async (req, res) => {
+updateRouter.patch("/users/:id/verify", userAuth, authorize("admin"), async (req, res) => {
   const { id } = req.params;
   try {
     if (!id) {
@@ -85,7 +85,7 @@ updateRouter.patch("/api/users/:id/verify", userAuth, authorize("admin"), async 
   }
 });
 
-updateRouter.patch("/api/users/:id", userAuth, async (req, res) => {
+updateRouter.patch("/users/:id", userAuth, async (req, res) => {
   const { id } = req.params;
   const data = { ...req.body };
 

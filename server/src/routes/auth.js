@@ -8,7 +8,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const { sendWelcomeEmail } = require("../services/email");
 
-authRouter.post("/api/auth/register", async (req, res) => {
+authRouter.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -66,7 +66,7 @@ authRouter.post("/api/auth/register", async (req, res) => {
   }
 });
 
-authRouter.post("/api/auth/login", async (req, res) => {
+authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -119,7 +119,7 @@ authRouter.post("/api/auth/login", async (req, res) => {
   }
 });
 
-authRouter.post("/api/auth/logout", (req, res) => {
+authRouter.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -131,7 +131,7 @@ authRouter.post("/api/auth/logout", (req, res) => {
   });
 });
 
-authRouter.post("/api/auth/forgot-password", async (req, res) => {
+authRouter.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -172,7 +172,7 @@ authRouter.post("/api/auth/forgot-password", async (req, res) => {
   }
 });
 
-authRouter.post("/api/auth/reset-password", async (req, res) => {
+authRouter.post("/reset-password", async (req, res) => {
   try {
     const { resetToken, newPassword } = req.body;
 

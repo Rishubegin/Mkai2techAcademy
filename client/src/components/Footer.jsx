@@ -159,7 +159,16 @@ const Footer = () => {
                   size="small"
                   sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
                 >
-                  <Box component="img" src={s.src} alt={s.alt} sx={{ width: 18, height: 18 }} />
+                  <Box
+                    component="img"
+                    src={s.src}
+                    alt={s.alt}
+                    sx={{
+                      width: 18,
+                      height: 18,
+                      filter: isLight ? "brightness(0)" : "none",
+                    }}
+                  />
                 </IconButton>
               ))}
             </Box>

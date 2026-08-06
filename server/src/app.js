@@ -99,47 +99,32 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Server is healthy" });
 });
 
-const authRouter = require("./routes/auth");
-const deleteRouter = require("./routes/delete");
-const reqRouter = require("./routes/request");
-const searchRouter = require("./routes/search");
-const updateRouter = require("./routes/update");
-const courseRouter = require("./routes/course");
-const teacherRouter = require("./routes/teacher");
-const batchRouter = require("./routes/batch");
-const contactRouter = require("./routes/contact");
-const adminRouter = require("./routes/admin");
-const materialRouter = require("./routes/material");
-const testimonialRouter = require("./routes/testimonial");
-const reviewRouter = require("./routes/review");
-const faqRouter = require("./routes/faq");
-const galleryRouter = require("./routes/gallery");
-const eventRouter = require("./routes/event");
-const noticeRouter = require("./routes/notice");
-const discountRouter = require("./routes/discount");
-const certificateRouter = require("./routes/certificate");
-const enrollmentApplicationRouter = require("./routes/enrollmentApplication");
+// One router per resource, each declaring paths relative to its mount point.
+// Auth is the only one with its own sub-prefix; the rest own a distinct
+// top-level noun ("/courses", "/batches", ...) directly under /api.
+const routers = [
+  ["/api/auth", require("./routes/auth")],
+  ["/api", require("./routes/user")],
+  ["/api", require("./routes/course")],
+  ["/api", require("./routes/teacher")],
+  ["/api", require("./routes/batch")],
+  ["/api", require("./routes/contact")],
+  ["/api", require("./routes/admin")],
+  ["/api", require("./routes/material")],
+  ["/api", require("./routes/testimonial")],
+  ["/api", require("./routes/review")],
+  ["/api", require("./routes/faq")],
+  ["/api", require("./routes/gallery")],
+  ["/api", require("./routes/event")],
+  ["/api", require("./routes/notice")],
+  ["/api", require("./routes/discount")],
+  ["/api", require("./routes/certificate")],
+  ["/api", require("./routes/enrollmentApplication")],
+];
 
-app.use("/api/auth", authRouter);
-app.use("/api", deleteRouter);
-app.use("/api", reqRouter);
-app.use("/api", searchRouter);
-app.use("/api", updateRouter);
-app.use("/api", courseRouter);
-app.use("/api", teacherRouter);
-app.use("/api", batchRouter);
-app.use("/api", contactRouter);
-app.use("/api", adminRouter);
-app.use("/api", materialRouter);
-app.use("/api", testimonialRouter);
-app.use("/api", reviewRouter);
-app.use("/api", faqRouter);
-app.use("/api", galleryRouter);
-app.use("/api", eventRouter);
-app.use("/api", noticeRouter);
-app.use("/api", discountRouter);
-app.use("/api", certificateRouter);
-app.use("/api", enrollmentApplicationRouter);
+for (const [prefix, router] of routers) {
+  app.use(prefix, router);
+}
 
 // 404 handler
 app.use((req, res) => {

@@ -4,7 +4,7 @@ const eventRouter = express.Router();
 const Event = require("../models/event");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const { eventUpload } = require("../middlewares/eventUpload");
+const { imageUpload } = require("../middlewares/upload");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 // List events (public) — ?upcoming=true / ?past=true filter by date
@@ -62,7 +62,7 @@ eventRouter.post(
   "/events",
   userAuth,
   authorize("admin"),
-  eventUpload.single("image"),
+  imageUpload.single("image"),
   async (req, res) => {
     let uploaded;
     try {

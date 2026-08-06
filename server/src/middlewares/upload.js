@@ -1,7 +1,10 @@
 const multer = require("multer");
 const path = require("path");
 
-const ALLOWED_EXTENSIONS = [
+// Every upload in the app goes through Cloudinary (see utils/cloudinaryUpload),
+// so nothing is ever written to disk — memoryStorage hands the route a Buffer.
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const DOCUMENT_EXTENSIONS = [
   ".pdf",
   ".doc",
   ".docx",
@@ -13,18 +16,35 @@ const ALLOWED_EXTENSIONS = [
   ".zip",
 ];
 
-const fileFilter = (req, file, cb) => {
+const extensionFilter = (allowed, label) => (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
-  if (!ALLOWED_EXTENSIONS.includes(ext)) {
-    return cb(new Error("Unsupported file type"));
+  if (!allowed.includes(ext)) {
+    return cb(new Error(`Unsupported ${label} type`));
   }
   cb(null, true);
 };
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  fileFilter,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+const createUploader = ({ allowed, label, maxBytes }) =>
+  multer({
+    storage: multer.memoryStorage(),
+    fileFilter: extensionFilter(allowed, label),
+    limits: { fileSize: maxBytes },
+  });
+
+// Images: avatars, event banners, gallery items, enrollment photos. These were
+// four separate modules with byte-identical config; they differed only in the
+// name they exported, so they now share one instance.
+const imageUpload = createUploader({
+  allowed: IMAGE_EXTENSIONS,
+  label: "image",
+  maxBytes: 5 * 1024 * 1024,
 });
 
-module.exports = { upload };
+// Course materials: larger limit, document formats rather than images.
+const documentUpload = createUploader({
+  allowed: DOCUMENT_EXTENSIONS,
+  label: "file",
+  maxBytes: 20 * 1024 * 1024,
+});
+
+module.exports = { imageUpload, documentUpload };

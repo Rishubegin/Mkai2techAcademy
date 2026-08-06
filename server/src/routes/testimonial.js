@@ -4,7 +4,7 @@ const testimonialRouter = express.Router();
 const Testimonial = require("../models/testimonial");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const { isRequestFromAdmin } = require("../utils/optionalAdmin");
+const { isRequestFromAdmin } = require("../middlewares/optionalAdmin");
 
 // Submit a testimonial (student) — pending approval by default
 testimonialRouter.post(

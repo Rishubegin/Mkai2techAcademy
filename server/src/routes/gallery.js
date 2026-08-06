@@ -4,7 +4,7 @@ const galleryRouter = express.Router();
 const Gallery = require("../models/gallery");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const { galleryUpload } = require("../middlewares/galleryUpload");
+const { imageUpload } = require("../middlewares/upload");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 // List gallery photos (public), optional ?category= filter
@@ -72,7 +72,7 @@ galleryRouter.post(
   "/gallery",
   userAuth,
   authorize("admin"),
-  galleryUpload.single("image"),
+  imageUpload.single("image"),
   async (req, res) => {
     let uploaded;
     try {

@@ -6,7 +6,7 @@ const EnrollmentApplication = require("../models/enrollmentApplication");
 const Batch = require("../models/batch");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const { enrollmentUpload } = require("../middlewares/enrollmentUpload");
+const { imageUpload } = require("../middlewares/upload");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 const ALLOWED_FIELDS = [
@@ -39,7 +39,7 @@ enrollmentApplicationRouter.post(
   "/enrollment-applications",
   userAuth,
   authorize("student"),
-  enrollmentUpload.fields([
+  imageUpload.fields([
     { name: "photo", maxCount: 1 },
     { name: "signature", maxCount: 1 },
     { name: "guardianSignature", maxCount: 1 },

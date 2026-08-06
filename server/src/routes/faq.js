@@ -4,7 +4,7 @@ const faqRouter = express.Router();
 const FAQ = require("../models/faq");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const { isRequestFromAdmin } = require("../utils/optionalAdmin");
+const { isRequestFromAdmin } = require("../middlewares/optionalAdmin");
 
 // List FAQs (public sees only active; admin can see all via ?all=true)
 faqRouter.get("/faqs", async (req, res) => {

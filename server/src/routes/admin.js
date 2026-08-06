@@ -8,6 +8,30 @@ const Batch = require("../models/batch");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 
+// Headline user counts for the admin dashboard. Lives here rather than with
+// the /users routes because it's a dashboard statistic, not a user resource.
+adminRouter.get("/dashboard/users/count", userAuth, authorize("admin"), async (req, res) => {
+  try {
+    const students = await User.countDocuments({ role: "student" });
+    const teachers = await User.countDocuments({ role: "teacher" });
+    const admins = await User.countDocuments({ role: "admin" });
+
+    res.status(200).json({
+      success: true,
+      message: "successfully fetched Count",
+      students: students,
+      teachers: teachers,
+      admins: admins,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: "Error Counting Users",
+      Error: err.message,
+    });
+  }
+});
+
 // Admin creates a user directly (student/teacher/admin), bypassing public signup
 adminRouter.post("/admin/users", userAuth, authorize("admin"), async (req, res) => {
   try {

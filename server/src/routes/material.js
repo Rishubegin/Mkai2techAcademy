@@ -5,7 +5,7 @@ const materialRouter = express.Router();
 const Material = require("../models/material");
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const { upload } = require("../middlewares/upload");
+const { documentUpload } = require("../middlewares/upload");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 const { isEnrolledInCourse } = require("../utils/enrollment");
 
@@ -21,7 +21,7 @@ materialRouter.post(
   "/materials",
   userAuth,
   authorize("admin"),
-  upload.single("file"),
+  documentUpload.single("file"),
   async (req, res) => {
     try {
       const { courseId, title, module } = req.body;

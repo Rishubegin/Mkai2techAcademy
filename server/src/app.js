@@ -17,14 +17,26 @@ const sanitizeBody = require("./middlewares/sanitize");
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 const allowedOrigins = [
-  "http://localhost:5173",
   "https://mkai2tech-academy-gg6d.vercel.app",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
+// Any local dev origin is allowed, whatever the port. A browser treats
+// "localhost:5173", "127.0.0.1:5173" and "localhost:5174" (what Vite picks
+// when 5173 is taken) as three different origins — pinning one of them
+// means the other two get no Access-Control-Allow-Origin at all.
+const isLocalOrigin = (origin) =>
+  /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    // No origin at all (curl, same-origin, server-to-server) is allowed too.
+    origin: (origin, callback) => {
+      if (!origin || isLocalOrigin(origin) || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

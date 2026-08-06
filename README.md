@@ -64,6 +64,7 @@ homepage is `lazy()`-loaded, so a first paint doesn't pull in the admin bundle.
 
 ```
 config/       Database and Cloudinary clients
+controllers/  Request handlers — one module per resource, mirroring routes/
 middlewares/  auth (required), optionalAdmin (best-effort), authorize (roles),
               upload (multer), sanitize
 models/       Mongoose schemas
@@ -73,9 +74,21 @@ utils/        cloudinaryUpload, enrollment helpers
 ```
 
 `app.js` mounts every router through a single table. Routers are organised by
-resource, not by HTTP verb — all ten `/users` endpoints live in `routes/user.js`.
-Within a router, literal paths (`/users/me`) must be declared before
-parameterised ones (`/users/:id`), or `:id` swallows them.
+resource, not by HTTP verb — all eleven `/users` endpoints live in
+`routes/user.js`. Within a router, literal paths (`/users/me`) must be declared
+before parameterised ones (`/users/:id`), or `:id` swallows them.
+
+A route file is wiring only — path, middlewares, and the controller function
+that handles it:
+
+```js
+userRouter.get("/users/me", userAuth, userController.getCurrentUser);
+```
+
+The handler itself lives in `controllers/user.js`. Each controller exports its
+handlers by name, so a route file reads as a table of contents for the resource
+and you can see the whole URL surface of `/users` in about sixty lines instead
+of four hundred.
 
 ## Tests
 

@@ -146,7 +146,7 @@ updateRouter.patch("/users/:id", userAuth, async (req, res) => {
 });
 
 updateRouter.patch(
-  "/api/users/:id/profile-image",
+  "/users/:id/profile-image",
   userAuth,
   async (req, res) => {
     const { id } = req.params;
@@ -194,7 +194,7 @@ updateRouter.patch(
 
 // Upload a profile picture file directly (as opposed to setting a URL)
 updateRouter.patch(
-  "/api/users/:id/profile-image/upload",
+  "/users/:id/profile-image/upload",
   userAuth,
   avatarUpload.single("avatar"),
   async (req, res) => {

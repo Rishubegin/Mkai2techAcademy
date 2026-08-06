@@ -5,8 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, resolveMediaUrl } from "@/lib/utils";
-import NotificationBell from "@/components/NotificationBell";
-import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/common/NotificationBell";
+import ThemeToggle from "@/components/common/ThemeToggle";
 
 // Primary links stay flat in the desktop nav; the "Explore" dropdown groups
 // the lower-traffic pages so the desktop bar doesn't get crowded. The

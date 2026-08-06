@@ -1,18 +1,18 @@
 import { Button } from "@/components/ui/button";
-import CoursesCarousel from "./CoursesCarousel";
-import StudentSuccess from "./StudentSuccess";
-import WhyChooseUs from "./WhyChooseUs";
-import OurFaculty from "./OurFaculty";
-import GetInTouch from "./GetInTouch";
-import InquirySection from "./InquirySection";
-import GalleryCarousel from "./GalleryCarousel";
+import CoursesCarousel from "@/components/home/CoursesCarousel";
+import StudentSuccess from "@/components/home/StudentSuccess";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
+import OurFaculty from "@/components/home/OurFaculty";
+import GetInTouch from "@/components/home/GetInTouch";
+import InquirySection from "@/components/home/InquirySection";
+import GalleryCarousel from "@/components/home/GalleryCarousel";
 import SliderImport from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const Slider = SliderImport.default || SliderImport;
 
-const Body = () => {
+const HomePage = () => {
   return (
     <div>
       <HeroSection />
@@ -98,4 +98,4 @@ const HeroSection = () => {
   );
 };
 
-export default Body;
+export default HomePage;

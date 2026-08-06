@@ -1,47 +1,50 @@
 import { lazy, Suspense } from "react";
-import Header from "./Header";
-import Body from "./components/Body";
-import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { AuthProvider } from "./context/AuthContext";
-import { ThemeProvider } from "./context/ThemeContext";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import HomePage from "@/pages/public/HomePage";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 
-// Everything below Header/Footer/Body is route-gated, so it's a natural
-// code-split boundary: the homepage's first paint only pulls in the layout
-// shell, not the admin section (recharts) or every secondary page.
-const LoginSignUp = lazy(() => import("./components/LoginSignUp"));
-const CoursesPage = lazy(() => import("./pages/CoursesPage"));
-const CourseDetailPage = lazy(() => import("./pages/CourseDetailPage"));
-const EnrollmentFormPage = lazy(() => import("./pages/EnrollmentFormPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
-const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
-const TermsPage = lazy(() => import("./pages/TermsPage"));
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
-const FAQPage = lazy(() => import("./pages/FAQPage"));
-const GalleryPage = lazy(() => import("./pages/GalleryPage"));
-const FacultyPage = lazy(() => import("./pages/FacultyPage"));
-const EventsPage = lazy(() => import("./pages/EventsPage"));
-const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
-const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
-const ProfilePage = lazy(() => import("./pages/student/ProfilePage"));
-const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
-const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
-const AdminStudents = lazy(() => import("./pages/admin/AdminStudents"));
-const AdminTeachers = lazy(() => import("./pages/admin/AdminTeachers"));
-const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
-const AdminBatches = lazy(() => import("./pages/admin/AdminBatches"));
-const AdminEnrollments = lazy(() => import("./pages/admin/AdminEnrollments"));
-const AdminDiscounts = lazy(() => import("./pages/admin/AdminDiscounts"));
-const AdminContactForms = lazy(() => import("./pages/admin/AdminContactForms"));
-const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
-const AdminFAQs = lazy(() => import("./pages/admin/AdminFAQs"));
-const AdminGallery = lazy(() => import("./pages/admin/AdminGallery"));
-const AdminEvents = lazy(() => import("./pages/admin/AdminEvents"));
-const AdminNotices = lazy(() => import("./pages/admin/AdminNotices"));
-const VerifyCertificatePage = lazy(() => import("./pages/VerifyCertificatePage"));
+// Everything below the layout shell and the homepage is route-gated, so it's a
+// natural code-split boundary: the homepage's first paint only pulls in the
+// layout shell, not the admin section (recharts) or every secondary page.
+const LoginSignUpPage = lazy(() => import("@/pages/auth/LoginSignUpPage"));
+
+const CoursesPage = lazy(() => import("@/pages/public/CoursesPage"));
+const CourseDetailPage = lazy(() => import("@/pages/public/CourseDetailPage"));
+const EnrollmentFormPage = lazy(() => import("@/pages/public/EnrollmentFormPage"));
+const AboutPage = lazy(() => import("@/pages/public/AboutPage"));
+const ContactPage = lazy(() => import("@/pages/public/ContactPage"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
+const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
+const NotFoundPage = lazy(() => import("@/pages/public/NotFoundPage"));
+const FAQPage = lazy(() => import("@/pages/public/FAQPage"));
+const GalleryPage = lazy(() => import("@/pages/public/GalleryPage"));
+const FacultyPage = lazy(() => import("@/pages/public/FacultyPage"));
+const EventsPage = lazy(() => import("@/pages/public/EventsPage"));
+const EventDetailPage = lazy(() => import("@/pages/public/EventDetailPage"));
+const VerifyCertificatePage = lazy(() => import("@/pages/public/VerifyCertificatePage"));
+
+const StudentDashboard = lazy(() => import("@/pages/student/StudentDashboard"));
+const ProfilePage = lazy(() => import("@/pages/student/ProfilePage"));
+
+const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
+const AdminOverview = lazy(() => import("@/pages/admin/AdminOverview"));
+const AdminStudents = lazy(() => import("@/pages/admin/AdminStudents"));
+const AdminTeachers = lazy(() => import("@/pages/admin/AdminTeachers"));
+const AdminCourses = lazy(() => import("@/pages/admin/AdminCourses"));
+const AdminBatches = lazy(() => import("@/pages/admin/AdminBatches"));
+const AdminEnrollments = lazy(() => import("@/pages/admin/AdminEnrollments"));
+const AdminDiscounts = lazy(() => import("@/pages/admin/AdminDiscounts"));
+const AdminContactForms = lazy(() => import("@/pages/admin/AdminContactForms"));
+const AdminTestimonials = lazy(() => import("@/pages/admin/AdminTestimonials"));
+const AdminFAQs = lazy(() => import("@/pages/admin/AdminFAQs"));
+const AdminGallery = lazy(() => import("@/pages/admin/AdminGallery"));
+const AdminEvents = lazy(() => import("@/pages/admin/AdminEvents"));
+const AdminNotices = lazy(() => import("@/pages/admin/AdminNotices"));
 
 const RouteFallback = () => (
   <div className="flex justify-center py-24">
@@ -73,7 +76,7 @@ function App() {
       path: "/",
       element: <Layout />,
       children: [
-        { path: "/", element: <Body /> },
+        { path: "/", element: <HomePage /> },
         { path: "/courses", element: <CoursesPage /> },
         { path: "/courses/:courseId", element: <CourseDetailPage /> },
         { path: "/about", element: <AboutPage /> },
@@ -128,7 +131,7 @@ function App() {
       path: "/loginSignUp",
       element: (
         <Suspense fallback={<RouteFallback />}>
-          <LoginSignUp />
+          <LoginSignUpPage />
         </Suspense>
       ),
     },

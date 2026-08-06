@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import NoticeBanner from "@/components/NoticeBanner";
+import NoticeBanner from "@/components/common/NoticeBanner";
 import api from "@/services/api";
 import {
   LineChart,

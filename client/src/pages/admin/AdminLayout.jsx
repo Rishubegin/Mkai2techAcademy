@@ -8,7 +8,6 @@ const links = [
   { to: "/admin/students", label: "Students" },
   { to: "/admin/teachers", label: "Teachers" },
   { to: "/admin/courses", label: "Courses" },
-  { to: "/admin/batches", label: "Batches" },
   { to: "/admin/enrollments", label: "Enrolment Forms" },
   { to: "/admin/discounts", label: "Discounts" },
   { to: "/admin/testimonials", label: "Testimonials" },

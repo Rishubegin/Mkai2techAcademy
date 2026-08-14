@@ -36,7 +36,6 @@ const AdminOverview = lazy(() => import("@/pages/admin/AdminOverview"));
 const AdminStudents = lazy(() => import("@/pages/admin/AdminStudents"));
 const AdminTeachers = lazy(() => import("@/pages/admin/AdminTeachers"));
 const AdminCourses = lazy(() => import("@/pages/admin/AdminCourses"));
-const AdminBatches = lazy(() => import("@/pages/admin/AdminBatches"));
 const AdminEnrollments = lazy(() => import("@/pages/admin/AdminEnrollments"));
 const AdminDiscounts = lazy(() => import("@/pages/admin/AdminDiscounts"));
 const AdminContactForms = lazy(() => import("@/pages/admin/AdminContactForms"));
@@ -95,7 +94,7 @@ function App() {
             { path: "/dashboard", element: <StudentDashboard /> },
             { path: "/profile", element: <ProfilePage /> },
             {
-              path: "/courses/:courseId/enroll/:batchId",
+              path: "/courses/:courseId/enroll",
               element: <EnrollmentFormPage />,
             },
           ],
@@ -111,7 +110,6 @@ function App() {
                 { path: "students", element: <AdminStudents /> },
                 { path: "teachers", element: <AdminTeachers /> },
                 { path: "courses", element: <AdminCourses /> },
-                { path: "batches", element: <AdminBatches /> },
                 { path: "enrollments", element: <AdminEnrollments /> },
                 { path: "discounts", element: <AdminDiscounts /> },
                 { path: "testimonials", element: <AdminTestimonials /> },

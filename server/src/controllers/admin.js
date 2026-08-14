@@ -1,9 +1,9 @@
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
-const Batch = require("../models/batch");
+const Enrollment = require("../models/enrollment");
 
-// CSV export of every enrollment across all batches
+// CSV export of every enrollment
 const escapeCsvField = (value) => {
   const str = String(value ?? "");
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
@@ -98,12 +98,11 @@ const getEnrollmentTrend = async (req, res) => {
         until = new Date();
       }
 
-      const trend = await Batch.aggregate([
-        { $unwind: "$students" },
-        { $match: { "students.enrolledAt": { $gte: since, $lte: until } } },
+      const trend = await Enrollment.aggregate([
+        { $match: { enrolledAt: { $gte: since, $lte: until } } },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$students.enrolledAt" } },
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$enrolledAt" } },
             count: { $sum: 1 },
           },
         },
@@ -127,25 +126,20 @@ const getEnrollmentTrend = async (req, res) => {
 
 const exportEnrollments = async (req, res) => {
     try {
-      const batches = await Batch.find()
+      const enrollments = await Enrollment.find()
         .populate("course", "title category")
-        .populate("students.student", "name email");
+        .populate("student", "name email");
 
-      const rows = [
-        ["Student Name", "Student Email", "Course", "Category", "Batch", "Enrolled At"],
-      ];
+      const rows = [["Student Name", "Student Email", "Course", "Category", "Enrolled At"]];
 
-      for (const batch of batches) {
-        for (const entry of batch.students) {
-          rows.push([
-            entry.student?.name || "Unknown",
-            entry.student?.email || "",
-            batch.course?.title || "",
-            batch.course?.category || "",
-            batch.batchName,
-            entry.enrolledAt ? entry.enrolledAt.toISOString() : "",
-          ]);
-        }
+      for (const entry of enrollments) {
+        rows.push([
+          entry.student?.name || "Unknown",
+          entry.student?.email || "",
+          entry.course?.title || "",
+          entry.course?.category || "",
+          entry.enrolledAt ? entry.enrolledAt.toISOString() : "",
+        ]);
       }
 
       const csv = rows.map((row) => row.map(escapeCsvField).join(",")).join("\n");
@@ -164,8 +158,7 @@ const exportEnrollments = async (req, res) => {
 
 const getPaymentAnalytics = async (req, res) => {
     try {
-      const [summary] = await Batch.aggregate([
-        { $unwind: "$students" },
+      const [summary] = await Enrollment.aggregate([
         {
           $lookup: {
             from: "courses",
@@ -177,10 +170,10 @@ const getPaymentAnalytics = async (req, res) => {
         { $unwind: "$courseInfo" },
         {
           $project: {
-            paymentStatus: "$students.paymentStatus",
-            amountPaid: { $ifNull: ["$students.amountPaid", 0] },
+            paymentStatus: 1,
+            amountPaid: { $ifNull: ["$amountPaid", 0] },
             expectedFee: {
-              $subtract: ["$courseInfo.fees", { $ifNull: ["$students.discountApplied", 0] }],
+              $subtract: ["$courseInfo.fees", { $ifNull: ["$discountApplied", 0] }],
             },
           },
         },

@@ -109,13 +109,13 @@ app.get("/api/health", (req, res) => {
 
 // One router per resource, each declaring paths relative to its mount point.
 // Auth is the only one with its own sub-prefix; the rest own a distinct
-// top-level noun ("/courses", "/batches", ...) directly under /api.
+// top-level noun ("/courses", "/enrollments", ...) directly under /api.
 const routers = [
   ["/api/auth", require("./routes/auth")],
   ["/api", require("./routes/user")],
   ["/api", require("./routes/course")],
+  ["/api", require("./routes/enrollment")],
   ["/api", require("./routes/teacher")],
-  ["/api", require("./routes/batch")],
   ["/api", require("./routes/contact")],
   ["/api", require("./routes/admin")],
   ["/api", require("./routes/material")],

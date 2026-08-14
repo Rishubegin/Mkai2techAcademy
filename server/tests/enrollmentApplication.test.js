@@ -21,18 +21,13 @@ afterAll(async () => {
 
 const fakeImage = Buffer.from("fake-image-bytes");
 
-const createBatch = async (adminCookie, capacity = 5) => {
+const createCourse = async (adminCookie) => {
   const courseRes = await request(app)
     .post("/api/courses")
     .set("Cookie", adminCookie)
     .send({ title: "Enrollment Form Test Course", category: "Test", fees: 1000 });
 
-  const batchRes = await request(app)
-    .post("/api/batches")
-    .set("Cookie", adminCookie)
-    .send({ batchName: "Enrollment Form Test Batch", course: courseRes.body.course._id, capacity });
-
-  return { courseId: courseRes.body.course._id, batchId: batchRes.body.batch._id };
+  return { courseId: courseRes.body.course._id };
 };
 
 const baseFields = {
@@ -56,12 +51,12 @@ describe("Enrollment applications", () => {
       email: "enrollformadmin1@example.com",
       role: "admin",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const res = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", adminCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -78,12 +73,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent2@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const res = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field({ ...baseFields, declarationAccepted: "false" })
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -101,12 +96,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent3@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const res = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("signature", fakeImage, "signature.jpg");
 
@@ -114,7 +109,7 @@ describe("Enrollment applications", () => {
     expect(res.body.Error).toMatch(/photo/i);
   });
 
-  it("submits an application and enrolls the student in the batch", async () => {
+  it("submits an application and enrolls the student in the course", async () => {
     const { cookie: adminCookie } = await createUserAndLogin({
       email: "enrollformadmin4@example.com",
       role: "admin",
@@ -123,12 +118,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent4@example.com",
       role: "student",
     });
-    const { batchId, courseId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const res = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -137,15 +132,17 @@ describe("Enrollment applications", () => {
     expect(res.body.application.photo).toMatch(/^https:\/\/res\.cloudinary\.com\//);
     expect(res.body.application.course.toString()).toBe(courseId);
 
-    const batchRes = await request(app)
-      .get(`/api/batches/${batchId}`)
+    const rosterRes = await request(app)
+      .get(`/api/courses/${courseId}/enrollments`)
       .set("Cookie", adminCookie);
     expect(
-      batchRes.body.batch.students.some((s) => (s.student._id || s.student) === student._id.toString()),
+      rosterRes.body.enrollments.some(
+        (e) => (e.student._id || e.student) === student._id.toString(),
+      ),
     ).toBe(true);
   });
 
-  it("resubmitting for the same batch updates the existing application instead of duplicating enrollment", async () => {
+  it("resubmitting for the same course updates the existing application instead of duplicating enrollment", async () => {
     const { cookie: adminCookie } = await createUserAndLogin({
       email: "enrollformadmin5@example.com",
       role: "admin",
@@ -154,12 +151,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent5@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -167,7 +164,7 @@ describe("Enrollment applications", () => {
     const secondRes = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field({ ...baseFields, name: "Updated Name" })
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -175,45 +172,10 @@ describe("Enrollment applications", () => {
     expect(secondRes.status).toBe(201);
     expect(secondRes.body.application.name).toBe("Updated Name");
 
-    const batchRes = await request(app)
-      .get(`/api/batches/${batchId}`)
+    const rosterRes = await request(app)
+      .get(`/api/courses/${courseId}/enrollments`)
       .set("Cookie", adminCookie);
-    expect(batchRes.body.batch.students).toHaveLength(1);
-  });
-
-  it("rejects submission once the batch is at full capacity", async () => {
-    const { cookie: adminCookie } = await createUserAndLogin({
-      email: "enrollformadmin6@example.com",
-      role: "admin",
-    });
-    const { cookie: student1Cookie } = await createUserAndLogin({
-      email: "enrollformstudent6a@example.com",
-      role: "student",
-    });
-    const { cookie: student2Cookie } = await createUserAndLogin({
-      email: "enrollformstudent6b@example.com",
-      role: "student",
-    });
-    const { batchId } = await createBatch(adminCookie, 1);
-
-    await request(app)
-      .post("/api/enrollment-applications")
-      .set("Cookie", student1Cookie)
-      .field("batchId", batchId)
-      .field(baseFields)
-      .attach("photo", fakeImage, "photo.jpg")
-      .attach("signature", fakeImage, "signature.jpg");
-
-    const res = await request(app)
-      .post("/api/enrollment-applications")
-      .set("Cookie", student2Cookie)
-      .field("batchId", batchId)
-      .field(baseFields)
-      .attach("photo", fakeImage, "photo.jpg")
-      .attach("signature", fakeImage, "signature.jpg");
-
-    expect(res.status).toBe(400);
-    expect(res.body.Error).toMatch(/full capacity/i);
+    expect(rosterRes.body.enrollments).toHaveLength(1);
   });
 
   it("lists a student's own applications", async () => {
@@ -225,12 +187,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent7@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -264,12 +226,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent9b@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const submitRes = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -290,12 +252,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent10@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const submitRes = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");
@@ -318,12 +280,12 @@ describe("Enrollment applications", () => {
       email: "enrollformstudent11@example.com",
       role: "student",
     });
-    const { batchId } = await createBatch(adminCookie);
+    const { courseId } = await createCourse(adminCookie);
 
     const submitRes = await request(app)
       .post("/api/enrollment-applications")
       .set("Cookie", studentCookie)
-      .field("batchId", batchId)
+      .field("courseId", courseId)
       .field(baseFields)
       .attach("photo", fakeImage, "photo.jpg")
       .attach("signature", fakeImage, "signature.jpg");

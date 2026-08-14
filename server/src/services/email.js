@@ -79,16 +79,16 @@ const sendWelcomeEmail = (user) =>
   sendMail({
     to: user.email,
     subject: "Welcome to M Kai² Tech Academy",
-    html: `<p>Hi ${user.name},</p><p>Welcome to M Kai² Tech Academy! Your account has been created successfully.</p><p>Browse our courses and enroll in a batch whenever you're ready.</p>`,
+    html: `<p>Hi ${user.name},</p><p>Welcome to M Kai² Tech Academy! Your account has been created successfully.</p><p>Browse our courses and enroll whenever you're ready.</p>`,
     text: `Hi ${user.name}, welcome to M Kai² Tech Academy! Your account has been created successfully.`,
   });
 
-const sendEnrollmentConfirmation = ({ user, courseTitle, batchName }) =>
+const sendEnrollmentConfirmation = ({ user, courseTitle }) =>
   sendMail({
     to: user.email,
     subject: `Enrollment confirmed: ${courseTitle}`,
-    html: `<p>Hi ${user.name},</p><p>You're enrolled in <strong>${courseTitle}</strong> (batch: ${batchName}).</p><p>Check your dashboard for batch details.</p>`,
-    text: `Hi ${user.name}, you're enrolled in ${courseTitle} (batch: ${batchName}).`,
+    html: `<p>Hi ${user.name},</p><p>You're enrolled in <strong>${courseTitle}</strong>.</p><p>Check your dashboard for course details.</p>`,
+    text: `Hi ${user.name}, you're enrolled in ${courseTitle}.`,
   });
 
 module.exports = { sendMail, sendWelcomeEmail, sendEnrollmentConfirmation };

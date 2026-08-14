@@ -62,7 +62,7 @@ const CourseDetailPage = () => {
   const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
-  const [batches, setBatches] = useState([]);
+  const [myEnrollments, setMyEnrollments] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewStats, setReviewStats] = useState({ averageRating: 0, totalReviews: 0 });
@@ -78,12 +78,8 @@ const CourseDetailPage = () => {
     setLoading(true);
     setError("");
     try {
-      const [courseRes, batchesRes] = await Promise.all([
-        api.get(`/courses/${courseId}`),
-        api.get(`/courses/${courseId}/batches`),
-      ]);
+      const courseRes = await api.get(`/courses/${courseId}`);
       setCourse(courseRes.data.course);
-      setBatches(batchesRes.data.batches);
     } catch (err) {
       setError(err.response?.data?.message || "Course not found");
     } finally {
@@ -94,6 +90,17 @@ const CourseDetailPage = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (!user) {
+      setMyEnrollments([]);
+      return;
+    }
+    api
+      .get(`/students/${user._id}/enrollments`)
+      .then((res) => setMyEnrollments(res.data.enrollments))
+      .catch(() => setMyEnrollments([]));
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -122,8 +129,9 @@ const CourseDetailPage = () => {
     loadReviews();
   }, [loadReviews]);
 
-  const isEnrolledInThisCourse =
-    user && batches.some((b) => b.students?.some((s) => (s.student?._id || s.student) === user._id));
+  const isEnrolledInThisCourse = myEnrollments.some(
+    (e) => (e.course?._id || e.course) === courseId,
+  );
   const hasReviewed = user && reviews.some((r) => r.student?._id === user._id);
 
   const handleSubmitReview = async (e) => {
@@ -163,16 +171,16 @@ const CourseDetailPage = () => {
     }
   };
 
-  // Navigates to the full-page enrolment form for a batch. The route itself
+  // Navigates to the full-page enrolment form. The route itself
   // is wrapped in ProtectedRoute, which redirects an anonymous visitor to
   // login/signup with a `redirect` back to this exact URL, then continues
   // here automatically once they're authenticated.
-  const handleOpenEnrollForm = (batchId) => {
-    navigate(`/courses/${courseId}/enroll/${batchId}`);
+  const handleOpenEnrollForm = () => {
+    navigate(`/courses/${courseId}/enroll`);
   };
 
-  const scrollToBatches = () => {
-    document.getElementById("batches")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollToEnroll = () => {
+    document.getElementById("enroll")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   if (loading) {
@@ -270,53 +278,25 @@ const CourseDetailPage = () => {
             </div>
           )}
 
-          {/* Batches / Enrollment */}
-          <div id="batches" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">Available Batches</h2>
+          {/* Enrollment */}
+          <div id="enroll" className="scroll-mt-24">
+            <h2 className="text-xl font-semibold mb-4">Enrollment</h2>
 
             {actionMessage && <p className="text-sm mb-4">{actionMessage}</p>}
 
-            {batches.length === 0 && (
-              <p className="text-sm text-muted-foreground">No batches scheduled yet.</p>
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {batches.map((batch) => {
-                const filled = batch.students?.length || 0;
-                const isFull = filled >= batch.capacity;
-                const alreadyEnrolled =
-                  user && batch.students?.some((s) => (s.student?._id || s.student) === user._id);
-
-                return (
-                  <Card key={batch._id}>
-                    <CardContent className="p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium">{batch.batchName}</h3>
-                        <span className="text-xs text-muted-foreground">{batch.status}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Seats: {filled}/{batch.capacity}
-                      </p>
-
-                      {user && user.role !== "student" ? null : alreadyEnrolled ? (
-                        <Button size="sm" className="w-full" disabled>
-                          Already Enrolled
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          className="w-full"
-                          disabled={isFull}
-                          onClick={() => handleOpenEnrollForm(batch._id)}
-                        >
-                          {isFull ? "Batch Full" : "Enroll Now"}
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+            <Card>
+              <CardContent className="p-4 space-y-2">
+                {user && user.role !== "student" ? null : isEnrolledInThisCourse ? (
+                  <Button size="sm" className="w-full" disabled>
+                    Already Enrolled
+                  </Button>
+                ) : (
+                  <Button size="sm" className="w-full" onClick={handleOpenEnrollForm}>
+                    Enroll Now
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Reviews */}
@@ -412,7 +392,7 @@ const CourseDetailPage = () => {
               </div>
             )}
             <CardContent className="p-6 space-y-4">
-              <Button size="lg" className="w-full" onClick={scrollToBatches}>
+              <Button size="lg" className="w-full" onClick={scrollToEnroll}>
                 Enroll Now
               </Button>
 

@@ -9,7 +9,7 @@ import api from "@/services/api";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const [batches, setBatches] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -21,22 +21,22 @@ const StudentDashboard = () => {
   const [certificates, setCertificates] = useState([]);
   const [applications, setApplications] = useState([]);
 
-  const loadBatches = useCallback(async () => {
+  const loadEnrollments = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await api.get(`/students/${user._id}/batches`);
-      setBatches(res.data.batches);
+      const res = await api.get(`/students/${user._id}/enrollments`);
+      setEnrollments(res.data.enrollments);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to load your batches");
+      setError(err.response?.data?.message || "Failed to load your courses");
     } finally {
       setLoading(false);
     }
   }, [user]);
 
   useEffect(() => {
-    loadBatches();
-  }, [loadBatches]);
+    loadEnrollments();
+  }, [loadEnrollments]);
 
   useEffect(() => {
     api
@@ -80,12 +80,12 @@ const StudentDashboard = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleUnenroll = async (batchId) => {
+  const handleUnenroll = async (courseId) => {
     setMessage("");
     try {
-      await api.delete(`/batches/${batchId}/enroll`);
+      await api.delete(`/courses/${courseId}/enroll`);
       setMessage("Unenrolled successfully");
-      loadBatches();
+      loadEnrollments();
     } catch (err) {
       setMessage(err.response?.data?.Error || "Failed to unenroll");
     }
@@ -118,17 +118,17 @@ const StudentDashboard = () => {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">My Batches</h2>
+        <h2 className="text-xl font-semibold mb-4">My Courses</h2>
 
         {message && <p className="text-sm mb-4">{message}</p>}
         {loading && <p className="text-muted-foreground">Loading...</p>}
         {error && <p className="text-destructive">{error}</p>}
 
-        {!loading && !error && batches.length === 0 && (
+        {!loading && !error && enrollments.length === 0 && (
           <Card>
             <CardContent className="p-6 text-center space-y-3">
               <p className="text-muted-foreground">
-                You're not enrolled in any batches yet.
+                You're not enrolled in any courses yet.
               </p>
               <Button asChild>
                 <Link to="/courses">Browse Courses</Link>
@@ -138,40 +138,40 @@ const StudentDashboard = () => {
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {batches.map((batch) => {
-            const myEnrollment = batch.students?.find(
-              (s) => (s.student?._id || s.student) === user._id,
-            );
-
-            return (
-            <Card key={batch._id}>
+          {enrollments.map((enrollment) => (
+            <Card key={enrollment._id}>
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{batch.course?.title}</h3>
-                  <span className="text-xs text-muted-foreground">{batch.status}</span>
+                  <h3 className="font-medium">{enrollment.course?.title}</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {enrollment.progressPercent}%
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Batch: {batch.batchName} · {batch.course?.category} ({batch.course?.mode})
+                  {enrollment.course?.category} ({enrollment.course?.mode})
                 </p>
-                {myEnrollment?.enrolledAt && (
+                {enrollment.enrolledAt && (
                   <p className="text-xs text-muted-foreground">
-                    Enrolled on {new Date(myEnrollment.enrolledAt).toLocaleDateString()}
+                    Enrolled on {new Date(enrollment.enrolledAt).toLocaleDateString()}
                   </p>
                 )}
                 <div className="flex gap-2">
-                  {batch.course?._id && (
+                  {enrollment.course?._id && (
                     <Button asChild size="sm" variant="outline">
-                      <Link to={`/courses/${batch.course._id}`}>View Course</Link>
+                      <Link to={`/courses/${enrollment.course._id}`}>View Course</Link>
                     </Button>
                   )}
-                  <Button size="sm" variant="destructive" onClick={() => handleUnenroll(batch._id)}>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleUnenroll(enrollment.course?._id)}
+                  >
                     Unenroll
                   </Button>
                 </div>
               </CardContent>
             </Card>
-            );
-          })}
+          ))}
         </div>
       </div>
 
@@ -209,7 +209,6 @@ const StudentDashboard = () => {
               <Card key={app._id}>
                 <CardContent className="p-4 space-y-2">
                   <h3 className="font-medium">{app.course?.title}</h3>
-                  <p className="text-xs text-muted-foreground">Batch: {app.batch?.batchName}</p>
                   <p className="text-xs text-muted-foreground">
                     Submitted {new Date(app.createdAt).toLocaleDateString()}
                   </p>

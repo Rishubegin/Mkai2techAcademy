@@ -39,6 +39,10 @@ const teacherProfileSchema = new mongoose.Schema(
         message: "Invalid photo URL",
       },
     },
+    // Set when the photo was uploaded through us, so the old Cloudinary asset
+    // can be destroyed on replace. Absent for photos that were stored as a
+    // plain external URL before uploads existed.
+    photoPublicId: String,
     socialLinks: {
       linkedin: String,
       twitter: String,

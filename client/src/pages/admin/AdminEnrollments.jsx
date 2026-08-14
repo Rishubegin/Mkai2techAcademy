@@ -85,7 +85,7 @@ const ApplicationRow = ({ application, onChanged }) => {
             <h3 className="font-medium">{application.student?.name}</h3>
             <p className="text-xs text-muted-foreground">{application.student?.email}</p>
             <p className="text-xs text-muted-foreground">
-              {application.course?.title} · {application.batch?.batchName} · Submitted{" "}
+              {application.course?.title} · Submitted{" "}
               {new Date(application.createdAt).toLocaleDateString()}
             </p>
           </div>

@@ -18,11 +18,6 @@ const certificateSchema = new mongoose.Schema(
       ref: "Course",
       required: [true, "Course reference is required"],
     },
-    batch: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Batch",
-      required: [true, "Batch reference is required"],
-    },
     completionDate: {
       type: Date,
       required: true,
@@ -35,8 +30,8 @@ const certificateSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// One certificate per student per batch — re-issuing returns the existing one.
-certificateSchema.index({ student: 1, batch: 1 }, { unique: true });
+// One certificate per student per course — re-issuing returns the existing one.
+certificateSchema.index({ student: 1, course: 1 }, { unique: true });
 
 certificateSchema.statics.generateId = () => {
   const year = new Date().getFullYear();

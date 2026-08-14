@@ -25,13 +25,8 @@ const enrollStudentInNewCourse = async (adminCookie, studentCookie) => {
     .set("Cookie", adminCookie)
     .send({ title: "Review Test Course", category: "Test", fees: 1000 });
 
-  const batchRes = await request(app)
-    .post("/api/batches")
-    .set("Cookie", adminCookie)
-    .send({ batchName: "Review Test Batch", course: courseRes.body.course._id, capacity: 5 });
-
   await request(app)
-    .post(`/api/batches/${batchRes.body.batch._id}/enroll`)
+    .post(`/api/courses/${courseRes.body.course._id}/enroll`)
     .set("Cookie", studentCookie);
 
   return courseRes.body.course._id;

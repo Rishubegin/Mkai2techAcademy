@@ -25,25 +25,22 @@ const enrollAndComplete = async (adminCookie, studentCookie, studentId) => {
     .set("Cookie", adminCookie)
     .send({ title: "Certificate Test Course", category: "Test", fees: 1000 });
 
-  const batchRes = await request(app)
-    .post("/api/batches")
-    .set("Cookie", adminCookie)
-    .send({ batchName: "Certificate Test Batch", course: courseRes.body.course._id, capacity: 5 });
+  const courseId = courseRes.body.course._id;
 
   await request(app)
-    .post(`/api/batches/${batchRes.body.batch._id}/enroll`)
+    .post(`/api/courses/${courseId}/enroll`)
     .set("Cookie", studentCookie);
 
   await request(app)
-    .patch(`/api/batches/${batchRes.body.batch._id}/students/${studentId}/progress`)
+    .patch(`/api/courses/${courseId}/enrollments/${studentId}`)
     .set("Cookie", adminCookie)
     .send({ progressPercent: 100 });
 
-  return { courseId: courseRes.body.course._id, batchId: batchRes.body.batch._id };
+  return { courseId };
 };
 
 describe("Certificates", () => {
-  it("rejects issuance for a student who hasn't completed the batch", async () => {
+  it("rejects issuance for a student who hasn't completed the course", async () => {
     const { cookie: adminCookie } = await createUserAndLogin({
       email: "certadmin1@example.com",
       role: "admin",
@@ -58,17 +55,12 @@ describe("Certificates", () => {
       .set("Cookie", adminCookie)
       .send({ title: "Incomplete Course", category: "Test", fees: 1000 });
 
-    const batchRes = await request(app)
-      .post("/api/batches")
-      .set("Cookie", adminCookie)
-      .send({ batchName: "Incomplete Batch", course: courseRes.body.course._id, capacity: 5 });
-
     await request(app)
-      .post(`/api/batches/${batchRes.body.batch._id}/enroll`)
+      .post(`/api/courses/${courseRes.body.course._id}/enroll`)
       .set("Cookie", studentCookie);
 
     const res = await request(app)
-      .post(`/api/certificates/${batchRes.body.batch._id}/${student._id}`)
+      .post(`/api/certificates/${courseRes.body.course._id}/${student._id}`)
       .set("Cookie", adminCookie);
 
     expect(res.status).toBe(400);
@@ -84,16 +76,16 @@ describe("Certificates", () => {
       role: "student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
 
     const res = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", studentCookie);
 
     expect(res.status).toBe(403);
   });
 
-  it("issues a certificate once a student has completed the batch", async () => {
+  it("issues a certificate once a student has completed the course", async () => {
     const { cookie: adminCookie } = await createUserAndLogin({
       email: "certadmin3@example.com",
       role: "admin",
@@ -103,10 +95,10 @@ describe("Certificates", () => {
       role: "student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
 
     const res = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     expect(res.status).toBe(201);
@@ -123,14 +115,14 @@ describe("Certificates", () => {
       role: "student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
 
     const firstRes = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     const secondRes = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     expect(secondRes.status).toBe(200);
@@ -149,9 +141,9 @@ describe("Certificates", () => {
       role: "student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
     await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     const res = await request(app).get("/api/certificates/my").set("Cookie", studentCookie);
@@ -171,9 +163,9 @@ describe("Certificates", () => {
       name: "Public Verify Student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
     const issueRes = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     const res = await request(app).get(
@@ -203,9 +195,9 @@ describe("Certificates", () => {
       role: "student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
     const issueRes = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     const res = await request(app)
@@ -230,9 +222,9 @@ describe("Certificates", () => {
       role: "student",
     });
 
-    const { batchId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
+    const { courseId } = await enrollAndComplete(adminCookie, studentCookie, student._id);
     const issueRes = await request(app)
-      .post(`/api/certificates/${batchId}/${student._id}`)
+      .post(`/api/certificates/${courseId}/${student._id}`)
       .set("Cookie", adminCookie);
 
     const res = await request(app)

@@ -1,12 +1,12 @@
-const Batch = require("../models/batch");
+const Enrollment = require("../models/enrollment");
 
-// True if the given user is enrolled in at least one batch of the given course.
+// True if the given user is enrolled in the given course.
 const isEnrolledInCourse = async (userId, courseId) => {
-  const enrolledBatch = await Batch.findOne({
+  const enrollment = await Enrollment.findOne({
+    student: userId,
     course: courseId,
-    "students.student": userId,
   });
-  return Boolean(enrolledBatch);
+  return Boolean(enrollment);
 };
 
 module.exports = { isEnrolledInCourse };

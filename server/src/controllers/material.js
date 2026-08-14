@@ -4,7 +4,7 @@ const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 const { isEnrolledInCourse } = require("../utils/enrollment");
 
 // A student can access a course's materials only if enrolled in at least one
-// of its batches; admins can always access.
+// the course; admins can always access.
 const canAccessCourseMaterials = async (user, courseId) => {
   if (user.role === "admin") return true;
   return isEnrolledInCourse(user._id, courseId);

@@ -28,8 +28,7 @@ eventRouter.post(
   eventController.createEvent,
 );
 
-// Register for an event (student only) — capacity + dedup gated, same
-// pattern as Batch self-enroll.
+// Register for an event (student only) — capacity + dedup gated.
 eventRouter.post(
   "/events/:id/register",
   userAuth,

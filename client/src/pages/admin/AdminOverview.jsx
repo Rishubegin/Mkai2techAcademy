@@ -27,25 +27,19 @@ const StatCard = ({ label, value }) => (
 const AdminOverview = () => {
   const [userCounts, setUserCounts] = useState(null);
   const [courseStats, setCourseStats] = useState(null);
-  const [batchStats, setBatchStats] = useState(null);
   const [trend, setTrend] = useState([]);
-  const [paymentSummary, setPaymentSummary] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([
       api.get("/dashboard/users/count"),
       api.get("/courses/stats"),
-      api.get("/batches/stats"),
       api.get("/admin/analytics/enrollment-trend", { params: { days: 30 } }),
-      api.get("/admin/analytics/payments"),
     ])
-      .then(([usersRes, coursesRes, batchesRes, trendRes, paymentsRes]) => {
+      .then(([usersRes, coursesRes, trendRes]) => {
         setUserCounts(usersRes.data);
         setCourseStats(coursesRes.data);
-        setBatchStats(batchesRes.data);
         setTrend(trendRes.data.trend);
-        setPaymentSummary(paymentsRes.data);
       })
       .catch((err) => setError(err.response?.data?.message || "Failed to load stats"));
   }, []);
@@ -69,14 +63,6 @@ const AdminOverview = () => {
         { name: "Offline", value: courseStats.offlineCourses },
         { name: "Online", value: courseStats.onlineCourses },
         { name: "Hybrid", value: courseStats.hybridCourses },
-      ]
-    : [];
-
-  const batchStatusData = batchStats
-    ? [
-        { name: "Upcoming", value: batchStats.upcoming },
-        { name: "Running", value: batchStats.running },
-        { name: "Completed", value: batchStats.completed },
       ]
     : [];
 
@@ -110,36 +96,6 @@ const AdminOverview = () => {
         </div>
       </div>
 
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Offline Payments</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard
-            label="Collected"
-            value={paymentSummary && `₹${paymentSummary.totalCollected.toLocaleString("en-IN")}`}
-          />
-          <StatCard
-            label="Pending"
-            value={paymentSummary && `₹${paymentSummary.totalPending.toLocaleString("en-IN")}`}
-          />
-          <StatCard
-            label="Paid / Partial / Unpaid"
-            value={
-              paymentSummary &&
-              `${paymentSummary.paidCount} / ${paymentSummary.partialCount} / ${paymentSummary.unpaidCount}`
-            }
-          />
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Batches</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Total" value={batchStats?.totalBatches} />
-          <StatCard label="Running" value={batchStats?.running} />
-          <StatCard label="Upcoming" value={batchStats?.upcoming} />
-        </div>
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardContent className="p-6">
@@ -170,21 +126,6 @@ const AdminOverview = () => {
                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Bar dataKey="value" fill="var(--brand-gold)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardContent className="p-6">
-            <h3 className="font-medium mb-4">Batches by Status</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={batchStatusData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={90} />
-                <Tooltip />
-                <Bar dataKey="value" fill="var(--brand-maroon)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

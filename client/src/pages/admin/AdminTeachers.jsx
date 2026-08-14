@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/services/api";
 
 const emptyForm = {
@@ -15,7 +16,10 @@ const emptyForm = {
   experienceYears: "",
   specialization: "",
   bio: "",
+  photo: "",
 };
+
+const initialOf = (name) => name?.trim()?.[0]?.toUpperCase() || "?";
 
 const TeacherRow = ({ profile, onChanged }) => {
   const [editing, setEditing] = useState(false);
@@ -25,6 +29,7 @@ const TeacherRow = ({ profile, onChanged }) => {
     experienceYears: profile.experienceYears ?? "",
     specialization: (profile.specialization || []).join(", "),
     bio: profile.bio || "",
+    photo: profile.photo || "",
   });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -43,6 +48,18 @@ const TeacherRow = ({ profile, onChanged }) => {
           .filter(Boolean),
         bio: form.bio,
       });
+
+      const nextPhoto = form.photo.trim();
+      if (nextPhoto !== (profile.photo || "")) {
+        if (nextPhoto) {
+          await api.patch(`/teacher-profiles/${profile._id}/photo`, { photo: nextPhoto });
+        } else {
+          // The dedicated photo endpoint rejects an empty value, so clearing a
+          // photo goes through the general update, which also permits `photo`.
+          await api.patch(`/teacher-profiles/${profile._id}`, { photo: "" });
+        }
+      }
+
       setEditing(false);
       onChanged();
     } catch (err) {
@@ -65,10 +82,16 @@ const TeacherRow = ({ profile, onChanged }) => {
   return (
     <Card>
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium">{profile.user?.name}</h3>
-            <p className="text-xs text-muted-foreground">{profile.user?.email}</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar size="lg">
+              <AvatarImage src={profile.photo || undefined} alt={profile.user?.name} />
+              <AvatarFallback>{initialOf(profile.user?.name)}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <h3 className="font-medium truncate">{profile.user?.name}</h3>
+              <p className="text-xs text-muted-foreground truncate">{profile.user?.email}</p>
+            </div>
           </div>
           <div className="flex gap-2">
             {editing ? (
@@ -126,6 +149,18 @@ const TeacherRow = ({ profile, onChanged }) => {
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               className="sm:col-span-2 text-xs"
             />
+            <div className="sm:col-span-2 flex items-center gap-2">
+              <Avatar size="lg">
+                <AvatarImage src={form.photo.trim() || undefined} alt="Photo preview" />
+                <AvatarFallback>{initialOf(profile.user?.name)}</AvatarFallback>
+              </Avatar>
+              <Input
+                placeholder="Photo URL (leave blank to remove)"
+                value={form.photo}
+                onChange={(e) => setForm({ ...form, photo: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
           </div>
         ) : (
           <div className="text-sm space-y-1">
@@ -198,6 +233,7 @@ const AdminTeachers = () => {
           .map((s) => s.trim())
           .filter(Boolean),
         bio: form.bio,
+        photo: form.photo.trim(),
       });
 
       setMessage("Teacher created successfully");
@@ -269,6 +305,12 @@ const AdminTeachers = () => {
                 placeholder="Specialization (comma separated)"
                 value={form.specialization}
                 onChange={(e) => setForm({ ...form, specialization: e.target.value })}
+              />
+              <Input
+                placeholder="Photo URL (optional)"
+                value={form.photo}
+                onChange={(e) => setForm({ ...form, photo: e.target.value })}
+                className="sm:col-span-2"
               />
               <Textarea
                 placeholder="Bio"

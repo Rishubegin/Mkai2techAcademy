@@ -9,8 +9,8 @@ const enrollmentApplicationController = require("../controllers/enrollmentApplic
 const enrollmentApplicationRouter = express.Router();
 
 // Submit an enrollment application (student only). Also performs the actual
-// batch enrollment in the same request — the paper form and "joining a
-// batch" are the same real-world action, so the frontend only needs one
+// course enrollment in the same request — the paper form and "joining a
+// course" are the same real-world action, so the frontend only needs one
 // button/request for both.
 enrollmentApplicationRouter.post(
   "/enrollment-applications",

@@ -1,30 +1,29 @@
 const PDFDocument = require("pdfkit");
 const Certificate = require("../models/certificate");
-const Batch = require("../models/batch");
+const Enrollment = require("../models/enrollment");
 
 const issueCertificate = async (req, res) => {
     try {
-      const { batchId, studentId } = req.params;
+      const { courseId, studentId } = req.params;
 
-      const batch = await Batch.findById(batchId).populate("course", "title");
-      if (!batch) {
-        throw new Error("Batch not found");
+      const enrollment = await Enrollment.findOne({
+        student: studentId,
+        course: courseId,
+      });
+      if (!enrollment) {
+        throw new Error("Student is not enrolled in this course");
       }
 
-      const entry = batch.students.find((s) => s.student.toString() === studentId);
-      if (!entry) {
-        throw new Error("Student is not enrolled in this batch");
-      }
-
-      const isComplete = entry.progressPercent >= 100 || batch.status === "Completed";
-      if (!isComplete) {
+      // Completion was previously also implied by the batch being marked
+      // "Completed"; with batches gone, progress is the only signal.
+      if (enrollment.progressPercent < 100) {
         return res.status(400).json({
           success: false,
-          message: "Student has not completed this batch yet",
+          message: "Student has not completed this course yet",
         });
       }
 
-      const existing = await Certificate.findOne({ student: studentId, batch: batchId });
+      const existing = await Certificate.findOne({ student: studentId, course: courseId });
       if (existing) {
         return res.status(200).json({
           success: true,
@@ -36,9 +35,8 @@ const issueCertificate = async (req, res) => {
       const certificate = await Certificate.create({
         certificateId: Certificate.generateId(),
         student: studentId,
-        course: batch.course._id,
-        batch: batch._id,
-        completionDate: entry.completedAt || new Date(),
+        course: courseId,
+        completionDate: enrollment.completedAt || new Date(),
         issuedBy: req.user._id,
       });
 

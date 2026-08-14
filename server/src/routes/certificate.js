@@ -7,10 +7,10 @@ const certificateController = require("../controllers/certificate");
 
 const certificateRouter = express.Router();
 
-// Issue a certificate for a student who has completed a batch (admin only).
-// Idempotent: re-issuing for the same student+batch returns the existing one.
+// Issue a certificate for a student who has completed a course (admin only).
+// Idempotent: re-issuing for the same student+course returns the existing one.
 certificateRouter.post(
-  "/certificates/:batchId/:studentId",
+  "/certificates/:courseId/:studentId",
   userAuth,
   authorize("admin"),
   certificateController.issueCertificate,

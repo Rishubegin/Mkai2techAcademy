@@ -12,12 +12,7 @@ const enrollmentApplicationSchema = new mongoose.Schema(
       ref: "Course",
       required: [true, "Course reference is required"],
     },
-    batch: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Batch",
-      required: [true, "Batch reference is required"],
-    },
-    // One application per student per batch — resubmitting overwrites.
+    // One application per student per course — resubmitting overwrites.
     name: { type: String, required: [true, "Name is required"], trim: true },
     fatherName: { type: String, trim: true },
     fatherOccupation: { type: String, trim: true },
@@ -56,7 +51,7 @@ const enrollmentApplicationSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-enrollmentApplicationSchema.index({ student: 1, batch: 1 }, { unique: true });
+enrollmentApplicationSchema.index({ student: 1, course: 1 }, { unique: true });
 enrollmentApplicationSchema.index({ course: 1 });
 
 module.exports = mongoose.model("EnrollmentApplication", enrollmentApplicationSchema);

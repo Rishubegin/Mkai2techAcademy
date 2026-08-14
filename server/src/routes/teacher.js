@@ -2,6 +2,7 @@ const express = require("express");
 
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
+const { imageUpload } = require("../middlewares/upload");
 
 const teacherController = require("../controllers/teacher");
 
@@ -25,10 +26,11 @@ teacherRouter.get(
 // List all teacher profiles (with optional specialization/experience filters)
 teacherRouter.get("/teacher-profiles", teacherController.listProfiles);
 
-// Update photo (owner or admin)
+// Upload/replace photo (owner or admin)
 teacherRouter.patch(
   "/teacher-profiles/:profileId/photo",
   userAuth,
+  imageUpload.single("photo"),
   teacherController.updatePhoto,
 );
 

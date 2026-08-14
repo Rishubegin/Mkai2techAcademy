@@ -1,6 +1,7 @@
 const PDFDocument = require("pdfkit");
 const EnrollmentApplication = require("../models/enrollmentApplication");
-const Batch = require("../models/batch");
+const Course = require("../models/course");
+const Enrollment = require("../models/enrollment");
 const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 const ALLOWED_FIELDS = [
@@ -30,29 +31,24 @@ const formatDate = (date) =>
 
 const createApplication = async (req, res) => {
     try {
-      const { batchId, declarationAccepted } = req.body;
+      const { courseId, declarationAccepted } = req.body;
 
-      if (!batchId) {
-        throw new Error("batchId is required");
+      if (!courseId) {
+        throw new Error("courseId is required");
       }
       if (declarationAccepted !== "true" && declarationAccepted !== true) {
         throw new Error("You must accept the declaration to submit this form");
       }
 
-      const batch = await Batch.findById(batchId).populate("course", "title");
-      if (!batch) {
-        throw new Error("Batch not found");
-      }
-      if (batch.status === "Completed") {
-        throw new Error("This batch has already been completed");
+      const course = await Course.findById(courseId).select("title");
+      if (!course) {
+        throw new Error("Course not found");
       }
 
       const studentId = req.user._id.toString();
-      const alreadyEnrolled = batch.students.some((s) => s.student.toString() === studentId);
-
-      if (!alreadyEnrolled && batch.students.length >= batch.capacity) {
-        throw new Error("This batch is at full capacity");
-      }
+      const alreadyEnrolled = Boolean(
+        await Enrollment.exists({ student: studentId, course: courseId }),
+      );
 
       const photoFile = req.files?.photo?.[0];
       const signatureFile = req.files?.signature?.[0];
@@ -80,15 +76,14 @@ const createApplication = async (req, res) => {
         if (req.body[key] !== undefined) formData[key] = req.body[key];
       }
       formData.declarationAccepted = true;
-      formData.appliedCourse = formData.appliedCourse || batch.course?.title;
+      formData.appliedCourse = formData.appliedCourse || course.title;
 
       const application = await EnrollmentApplication.findOneAndUpdate(
-        { student: studentId, batch: batchId },
+        { student: studentId, course: courseId },
         {
           ...formData,
           student: studentId,
-          course: batch.course?._id,
-          batch: batchId,
+          course: courseId,
           photo: photoUpload.secure_url,
           photoPublicId: photoUpload.public_id,
           signature: signatureUpload.secure_url,
@@ -107,8 +102,11 @@ const createApplication = async (req, res) => {
       );
 
       if (!alreadyEnrolled) {
-        batch.students.push({ student: studentId, enrolledAt: new Date() });
-        await batch.save();
+        await Enrollment.create({
+          student: studentId,
+          course: courseId,
+          enrolledAt: new Date(),
+        });
       }
 
       res.status(201).json({
@@ -117,7 +115,7 @@ const createApplication = async (req, res) => {
         application,
       });
     } catch (err) {
-      const message = err.code === 11000 ? "You have already applied for this batch" : err.message;
+      const message = err.code === 11000 ? "You have already applied for this course" : err.message;
       res.status(400).json({
         success: false,
         message: "Error submitting enrollment application",
@@ -130,7 +128,6 @@ const listMyApplications = async (req, res) => {
   try {
     const applications = await EnrollmentApplication.find({ student: req.user._id })
       .populate("course", "title")
-      .populate("batch", "batchName")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -155,7 +152,6 @@ const listApplications = async (req, res) => {
       const applications = await EnrollmentApplication.find(filter)
         .populate("student", "name email phone")
         .populate("course", "title")
-        .populate("batch", "batchName")
         .sort({ createdAt: -1 });
 
       res.status(200).json({
@@ -176,8 +172,7 @@ const getApplicationById = async (req, res) => {
   try {
     const application = await EnrollmentApplication.findById(req.params.id)
       .populate("student", "name email phone")
-      .populate("course", "title")
-      .populate("batch", "batchName");
+      .populate("course", "title");
 
     if (!application) {
       throw new Error("Application not found");
@@ -266,8 +261,7 @@ const downloadApplication = async (req, res) => {
     try {
       const application = await EnrollmentApplication.findById(req.params.id)
         .populate("student", "name email")
-        .populate("course", "title")
-        .populate("batch", "batchName");
+        .populate("course", "title");
 
       if (!application) {
         throw new Error("Application not found");
@@ -338,7 +332,6 @@ const downloadApplication = async (req, res) => {
       line("Branch Name:", application.branchName);
       line("Next Year Plan:", application.nextYearPlan);
       line("Applied Course:", application.appliedCourse || application.course?.title);
-      line("Batch:", application.batch?.batchName);
 
       y += 10;
       if (application.photo) {

@@ -28,7 +28,7 @@ const emptyForm = {
 };
 
 const EnrollmentFormPage = () => {
-  const { courseId, batchId } = useParams();
+  const { courseId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -75,7 +75,7 @@ const EnrollmentFormPage = () => {
     setSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append("batchId", batchId);
+      formData.append("courseId", courseId);
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
       formData.append("appliedCourse", course?.title || "");
       formData.append("declarationAccepted", "true");

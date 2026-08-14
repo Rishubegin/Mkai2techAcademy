@@ -1,7 +1,7 @@
 // Seeds realistic sample data across every schema so the app has something
 // to look at beyond an empty state. Safe by design:
 // - Never modifies or deletes existing users — only adds new teacher
-//   accounts and enrolls existing students into newly-created batches.
+//   accounts and enrolls existing students into courses.
 // - Bails out early (no writes at all) if courses already exist, so
 //   running it twice by accident can't create duplicates.
 //
@@ -14,7 +14,7 @@ const bcrypt = require("bcrypt");
 const User = require("../src/models/user");
 const TeacherProfile = require("../src/models/teacherProfile");
 const Course = require("../src/models/course");
-const Batch = require("../src/models/batch");
+const Enrollment = require("../src/models/enrollment");
 const Review = require("../src/models/review");
 const Testimonial = require("../src/models/testimonial");
 const FAQ = require("../src/models/faq");
@@ -176,7 +176,7 @@ async function seed() {
   const [neetCourse, jeeCourse, mernCourse, pythonCourse, adcaCourse, dmCourse] = courses;
   console.log(`Created ${courses.length} courses`);
 
-  // ---- Batches (+ enroll existing real students where sensible) --------
+  // ---- Enrollments (enroll existing real students where sensible) ------
   const students = await User.find({ role: "student" }).select("_id email");
   const findStudent = (email) => students.find((s) => s.email === email)?._id;
 
@@ -186,69 +186,22 @@ async function seed() {
   const dhoni = findStudent("dhoni@gmail.com");
   const ownerAccount = findStudent("hrishabho40@gmail.com");
 
-  const enrolledOf = (...ids) =>
+  const enrollmentsIn = (course, ...ids) =>
     ids
       .filter(Boolean)
-      .map((id, i) => ({ student: id, enrolledAt: daysAgo(25 - i * 4) }));
+      .map((id, i) => ({ student: id, course: course._id, enrolledAt: daysAgo(25 - i * 4) }));
 
-  const batchData = [
-    {
-      batchName: "NEET 2026 Morning Batch",
-      course: neetCourse._id,
-      teacher: rajeshProfile._id,
-      capacity: 40,
-      status: "Running",
-      startDate: daysAgo(45),
-      students: enrolledOf(abhishek),
-    },
-    {
-      batchName: "JEE 2026 Evening Batch",
-      course: jeeCourse._id,
-      teacher: rajeshProfile._id,
-      capacity: 35,
-      status: "Upcoming",
-      startDate: daysFromNow(14),
-      students: enrolledOf(dhoni),
-    },
-    {
-      batchName: "MERN Weekend Batch",
-      course: mernCourse._id,
-      teacher: priyaProfile._id,
-      capacity: 20,
-      status: "Running",
-      startDate: daysAgo(30),
-      students: enrolledOf(rishabh, ownerAccount),
-    },
-    {
-      batchName: "Python Morning Batch",
-      course: pythonCourse._id,
-      teacher: priyaProfile._id,
-      capacity: 25,
-      status: "Completed",
-      startDate: daysAgo(120),
-      endDate: daysAgo(30),
-      students: enrolledOf(rishabh),
-    },
-    {
-      batchName: "ADCA Batch A",
-      course: adcaCourse._id,
-      capacity: 30,
-      status: "Upcoming",
-      startDate: daysFromNow(7),
-      students: enrolledOf(ownerAccount),
-    },
-    {
-      batchName: "Digital Marketing Batch 1",
-      course: dmCourse._id,
-      capacity: 25,
-      status: "Running",
-      startDate: daysAgo(15),
-      students: enrolledOf(ashutosh),
-    },
+  const enrollmentData = [
+    ...enrollmentsIn(neetCourse, abhishek),
+    ...enrollmentsIn(jeeCourse, dhoni),
+    ...enrollmentsIn(mernCourse, rishabh, ownerAccount),
+    ...enrollmentsIn(pythonCourse, rishabh),
+    ...enrollmentsIn(adcaCourse, ownerAccount),
+    ...enrollmentsIn(dmCourse, ashutosh),
   ];
 
-  const batches = await Batch.insertMany(batchData);
-  console.log(`Created ${batches.length} batches`);
+  const enrollments = await Enrollment.insertMany(enrollmentData);
+  console.log(`Created ${enrollments.length} enrollments`);
 
   // ---- Reviews -----------------------------------------------------
   const reviewData = [

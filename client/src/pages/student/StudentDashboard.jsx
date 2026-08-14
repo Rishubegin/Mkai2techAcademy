@@ -12,7 +12,6 @@ const StudentDashboard = () => {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
 
   const [testimonialText, setTestimonialText] = useState("");
   const [testimonialMessage, setTestimonialMessage] = useState("");
@@ -80,17 +79,6 @@ const StudentDashboard = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleUnenroll = async (courseId) => {
-    setMessage("");
-    try {
-      await api.delete(`/courses/${courseId}/enroll`);
-      setMessage("Unenrolled successfully");
-      loadEnrollments();
-    } catch (err) {
-      setMessage(err.response?.data?.Error || "Failed to unenroll");
-    }
-  };
-
   const handleSubmitTestimonial = async (e) => {
     e.preventDefault();
     setSubmittingTestimonial(true);
@@ -120,7 +108,6 @@ const StudentDashboard = () => {
       <div>
         <h2 className="text-xl font-semibold mb-4">My Courses</h2>
 
-        {message && <p className="text-sm mb-4">{message}</p>}
         {loading && <p className="text-muted-foreground">Loading...</p>}
         {error && <p className="text-destructive">{error}</p>}
 
@@ -161,13 +148,6 @@ const StudentDashboard = () => {
                       <Link to={`/courses/${enrollment.course._id}`}>View Course</Link>
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleUnenroll(enrollment.course?._id)}
-                  >
-                    Unenroll
-                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/services/api";
+import CourseRosterPanel from "./CourseRosterPanel";
 
 const emptyForm = {
   title: "",
@@ -274,6 +275,7 @@ const AdminCourses = () => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(emptyForm);
   const [materialsOpenId, setMaterialsOpenId] = useState(null);
+  const [rosterOpenId, setRosterOpenId] = useState(null);
   const [contentOpenId, setContentOpenId] = useState(null);
 
   const loadCourses = useCallback(async () => {
@@ -542,6 +544,15 @@ const AdminCourses = () => {
                       >
                         {materialsOpenId === course._id ? "Hide Materials" : "Materials"}
                       </Button>
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={() =>
+                          setRosterOpenId(rosterOpenId === course._id ? null : course._id)
+                        }
+                      >
+                        {rosterOpenId === course._id ? "Hide Students" : "Students"}
+                      </Button>
                       <Button size="xs" variant="destructive" onClick={() => handleDelete(course._id)}>
                         Delete
                       </Button>
@@ -552,6 +563,9 @@ const AdminCourses = () => {
                   )}
                   {materialsOpenId === course._id && (
                     <CourseMaterialsPanel courseId={course._id} />
+                  )}
+                  {rosterOpenId === course._id && (
+                    <CourseRosterPanel courseId={course._id} />
                   )}
                 </CardContent>
               </Card>

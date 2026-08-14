@@ -43,6 +43,10 @@ const courseSchema = new mongoose.Schema(
         message: "Invalid image URL",
       },
     },
+    // Set when the image was uploaded through us, so the old Cloudinary asset
+    // can be destroyed on replace. Absent for images stored as a plain
+    // external URL before uploads existed (e.g. the seeded Unsplash links).
+    imagePublicId: String,
     isFeatured: {
       type: Boolean,
       default: false,

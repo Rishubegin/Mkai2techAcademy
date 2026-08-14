@@ -2,6 +2,7 @@ const express = require("express");
 
 const userAuth = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
+const { imageUpload } = require("../middlewares/upload");
 
 const courseController = require("../controllers/course");
 
@@ -49,11 +50,12 @@ courseRouter.patch(
   courseController.updateFeatured,
 );
 
-// Update course image (admin only)
+// Upload/replace course image (admin only)
 courseRouter.patch(
   "/courses/:id/image",
   userAuth,
   authorize("admin"),
+  imageUpload.single("image"),
   courseController.updateImage,
 );
 

@@ -1,4 +1,5 @@
 const Course = require("../models/course");
+const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 const ALLOWED_FEE_OPS = ["gte", "gt", "lte", "lt"];
 
@@ -255,20 +256,28 @@ const updateFeatured = async (req, res) => {
 
 const updateImage = async (req, res) => {
     try {
-      const { image } = req.body;
-
-      if (!image) {
-        throw new Error("image URL is required");
+      if (!req.file) {
+        throw new Error("An image file is required");
       }
+
+      const existing = await Course.findById(req.params.id).select("imagePublicId");
+      if (!existing) {
+        throw new Error("Course not found");
+      }
+
+      const uploaded = await uploadBuffer(req.file.buffer, {
+        folder: "mkai2tech/courses",
+      });
 
       const course = await Course.findByIdAndUpdate(
         req.params.id,
-        { image },
+        { image: uploaded.secure_url, imagePublicId: uploaded.public_id },
         { returnDocument: "after", runValidators: true },
       );
 
-      if (!course) {
-        throw new Error("Course not found");
+      // Drop the previous upload only once the new one is safely stored.
+      if (existing.imagePublicId) {
+        deleteAsset(existing.imagePublicId, "image").catch(() => {});
       }
 
       res.status(200).json({
@@ -395,6 +404,11 @@ const deleteCourse = async (req, res) => {
 
     if (!course) {
       throw new Error("Course not found");
+    }
+
+    // Don't leave the uploaded image orphaned in Cloudinary.
+    if (course.imagePublicId) {
+      deleteAsset(course.imagePublicId, "image").catch(() => {});
     }
 
     res.status(200).json({

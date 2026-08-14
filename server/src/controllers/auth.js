@@ -5,6 +5,20 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const { sendWelcomeEmail } = require("../services/email");
 
+// In production the client (vercel.app) and this API (onrender.com) are
+// different sites, so a SameSite=Strict cookie is never sent on those
+// requests — every authenticated call would 401 with "token not found".
+// SameSite=None is what allows a cross-site cookie, and the spec requires
+// Secure alongside it. Locally both halves are localhost (ports don't affect
+// "site"), so Strict works and avoids needing HTTPS.
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "strict",
+};
+
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -93,9 +107,7 @@ const login = async (req, res) => {
     });
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      ...cookieOptions,
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -117,11 +129,8 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  // Must match the attributes the cookie was set with, or it won't clear.
+  res.clearCookie("token", cookieOptions);
   return res.status(200).json({
     success: true,
     message: "Logout successful",

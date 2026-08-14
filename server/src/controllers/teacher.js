@@ -1,5 +1,6 @@
 const TeacherProfile = require("../models/teacherProfile");
 const User = require("../models/user");
+const { uploadBuffer, deleteAsset } = require("../utils/cloudinaryUpload");
 
 const createProfile = async (req, res) => {
   try {
@@ -156,10 +157,8 @@ const listProfiles = async (req, res) => {
 
 const updatePhoto = async (req, res) => {
   try {
-    const { photo } = req.body;
-
-    if (!photo) {
-      throw new Error("photo URL is required");
+    if (!req.file) {
+      throw new Error("A photo file is required");
     }
 
     const profile = await TeacherProfile.findById(req.params.profileId);
@@ -178,8 +177,21 @@ const updatePhoto = async (req, res) => {
       });
     }
 
-    profile.photo = photo;
+    const uploaded = await uploadBuffer(req.file.buffer, {
+      folder: "mkai2tech/teachers",
+    });
+
+    // Drop the previous upload only once the new one is safely stored. Photos
+    // set as a plain URL before uploads existed have no publicId to destroy.
+    const previousPublicId = profile.photoPublicId;
+
+    profile.photo = uploaded.secure_url;
+    profile.photoPublicId = uploaded.public_id;
     await profile.save();
+
+    if (previousPublicId) {
+      deleteAsset(previousPublicId, "image").catch(() => {});
+    }
 
     res.status(200).json({
       success: true,
@@ -279,6 +291,11 @@ const deleteProfile = async (req, res) => {
 
       if (!profile) {
         throw new Error("Teacher profile not found");
+      }
+
+      // Don't leave the uploaded photo orphaned in Cloudinary.
+      if (profile.photoPublicId) {
+        deleteAsset(profile.photoPublicId, "image").catch(() => {});
       }
 
       res.status(200).json({

@@ -16,7 +16,6 @@ const emptyForm = {
   experienceYears: "",
   specialization: "",
   bio: "",
-  photo: "",
 };
 
 const initialOf = (name) => name?.trim()?.[0]?.toUpperCase() || "?";
@@ -29,10 +28,20 @@ const TeacherRow = ({ profile, onChanged }) => {
     experienceYears: profile.experienceYears ?? "",
     specialization: (profile.specialization || []).join(", "),
     bio: profile.bio || "",
-    photo: profile.photo || "",
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const handlePhotoPick = (file) => {
+    setPhotoFile(file || null);
+    // Object URLs are revoked on unmount/replace so the blob isn't retained.
+    setPhotoPreview((previous) => {
+      if (previous) URL.revokeObjectURL(previous);
+      return file ? URL.createObjectURL(file) : "";
+    });
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -49,17 +58,13 @@ const TeacherRow = ({ profile, onChanged }) => {
         bio: form.bio,
       });
 
-      const nextPhoto = form.photo.trim();
-      if (nextPhoto !== (profile.photo || "")) {
-        if (nextPhoto) {
-          await api.patch(`/teacher-profiles/${profile._id}/photo`, { photo: nextPhoto });
-        } else {
-          // The dedicated photo endpoint rejects an empty value, so clearing a
-          // photo goes through the general update, which also permits `photo`.
-          await api.patch(`/teacher-profiles/${profile._id}`, { photo: "" });
-        }
+      if (photoFile) {
+        const photoData = new FormData();
+        photoData.append("photo", photoFile);
+        await api.patch(`/teacher-profiles/${profile._id}/photo`, photoData);
       }
 
+      handlePhotoPick(null);
       setEditing(false);
       onChanged();
     } catch (err) {
@@ -151,13 +156,13 @@ const TeacherRow = ({ profile, onChanged }) => {
             />
             <div className="sm:col-span-2 flex items-center gap-2">
               <Avatar size="lg">
-                <AvatarImage src={form.photo.trim() || undefined} alt="Photo preview" />
+                <AvatarImage src={photoPreview || profile.photo || undefined} alt="Photo preview" />
                 <AvatarFallback>{initialOf(profile.user?.name)}</AvatarFallback>
               </Avatar>
               <Input
-                placeholder="Photo URL (leave blank to remove)"
-                value={form.photo}
-                onChange={(e) => setForm({ ...form, photo: e.target.value })}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => handlePhotoPick(e.target.files?.[0])}
                 className="h-8 text-xs"
               />
             </div>
@@ -194,6 +199,7 @@ const AdminTeachers = () => {
   const [message, setMessage] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [newPhoto, setNewPhoto] = useState(null);
 
   const loadProfiles = useCallback(async () => {
     setLoading(true);
@@ -223,7 +229,7 @@ const AdminTeachers = () => {
         role: "teacher",
       });
 
-      await api.post("/teacher-profiles", {
+      const profileRes = await api.post("/teacher-profiles", {
         user: userRes.data.user._id,
         qualification: form.qualification,
         experience: form.experience,
@@ -233,11 +239,19 @@ const AdminTeachers = () => {
           .map((s) => s.trim())
           .filter(Boolean),
         bio: form.bio,
-        photo: form.photo.trim(),
       });
+
+      // The photo endpoint takes a file, so it can only run once the profile
+      // has an id — hence the second request rather than one combined create.
+      if (newPhoto) {
+        const photoData = new FormData();
+        photoData.append("photo", newPhoto);
+        await api.patch(`/teacher-profiles/${profileRes.data.profile._id}/photo`, photoData);
+      }
 
       setMessage("Teacher created successfully");
       setForm(emptyForm);
+      setNewPhoto(null);
       setShowForm(false);
       loadProfiles();
     } catch (err) {
@@ -306,12 +320,14 @@ const AdminTeachers = () => {
                 value={form.specialization}
                 onChange={(e) => setForm({ ...form, specialization: e.target.value })}
               />
-              <Input
-                placeholder="Photo URL (optional)"
-                value={form.photo}
-                onChange={(e) => setForm({ ...form, photo: e.target.value })}
-                className="sm:col-span-2"
-              />
+              <div className="sm:col-span-2 space-y-1">
+                <label className="text-xs text-muted-foreground">Photo (optional)</label>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setNewPhoto(e.target.files?.[0] || null)}
+                />
+              </div>
               <Textarea
                 placeholder="Bio"
                 value={form.bio}

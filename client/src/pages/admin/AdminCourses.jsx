@@ -12,7 +12,6 @@ const emptyForm = {
   category: "",
   mode: "Offline",
   fees: "",
-  image: "",
   instructor: "",
 };
 
@@ -276,6 +275,8 @@ const AdminCourses = () => {
   const [editForm, setEditForm] = useState(emptyForm);
   const [materialsOpenId, setMaterialsOpenId] = useState(null);
   const [rosterOpenId, setRosterOpenId] = useState(null);
+  const [newImage, setNewImage] = useState(null);
+  const [editImage, setEditImage] = useState(null);
   const [contentOpenId, setContentOpenId] = useState(null);
 
   const loadCourses = useCallback(async () => {
@@ -302,13 +303,23 @@ const AdminCourses = () => {
     e.preventDefault();
     setMessage("");
     try {
-      await api.post("/courses", {
+      const res = await api.post("/courses", {
         ...form,
         fees: Number(form.fees),
         instructor: form.instructor || undefined,
       });
+
+      // The image endpoint takes a file, so it can only run once the course
+      // has an id — hence the second request rather than one combined create.
+      if (newImage) {
+        const imageData = new FormData();
+        imageData.append("image", newImage);
+        await api.patch(`/courses/${res.data.course._id}/image`, imageData);
+      }
+
       setMessage("Course created successfully");
       setForm(emptyForm);
+      setNewImage(null);
       setShowForm(false);
       loadCourses();
     } catch (err) {
@@ -337,6 +348,14 @@ const AdminCourses = () => {
         fees: Number(editForm.fees),
         instructor: editForm.instructor || undefined,
       });
+
+      if (editImage) {
+        const imageData = new FormData();
+        imageData.append("image", editImage);
+        await api.patch(`/courses/${id}/image`, imageData);
+      }
+
+      setEditImage(null);
       setEditingId(null);
       loadCourses();
     } catch (err) {
@@ -418,12 +437,14 @@ const AdminCourses = () => {
                   </option>
                 ))}
               </select>
-              <Input
-                placeholder="Image URL (optional)"
-                value={form.image}
-                onChange={(e) => setForm({ ...form, image: e.target.value })}
-                className="sm:col-span-2"
-              />
+              <div className="sm:col-span-2 space-y-1">
+                <label className="text-xs text-muted-foreground">Course image (optional)</label>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setNewImage(e.target.files?.[0] || null)}
+                />
+              </div>
               <Textarea
                 placeholder="Description"
                 value={form.description}
@@ -481,12 +502,25 @@ const AdminCourses = () => {
                       </option>
                     ))}
                   </select>
-                  <Input
-                    placeholder="Image URL"
-                    value={editForm.image}
-                    onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
-                    className="sm:col-span-2"
-                  />
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="text-xs text-muted-foreground">
+                      Course image — pick a file to replace it
+                    </label>
+                    <div className="flex items-center gap-3">
+                      {editForm.image && (
+                        <img
+                          src={editForm.image}
+                          alt=""
+                          className="h-12 w-20 object-cover rounded border shrink-0"
+                        />
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(e) => setEditImage(e.target.files?.[0] || null)}
+                      />
+                    </div>
+                  </div>
                   <Textarea
                     value={editForm.description}
                     onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -496,7 +530,7 @@ const AdminCourses = () => {
                     <Button size="sm" onClick={() => handleUpdate(course._id)}>
                       Save
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                    <Button size="sm" variant="outline" onClick={() => { setEditingId(null); setEditImage(null); }}>
                       Cancel
                     </Button>
                   </div>

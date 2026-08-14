@@ -56,6 +56,15 @@ userRouter.patch(
   userController.verifyUser,
 );
 
+// Promote/demote a user (admin only). Kept separate from PATCH /users/:id,
+// which any user can call on themselves.
+userRouter.patch(
+  "/users/:id/role",
+  userAuth,
+  authorize("admin"),
+  userController.updateUserRole,
+);
+
 // ------------------------------------------------- single-user by id (last) ----
 userRouter.get("/users/:id", userAuth, userController.getUserById);
 

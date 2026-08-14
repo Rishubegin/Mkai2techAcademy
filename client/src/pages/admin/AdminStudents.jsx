@@ -2,12 +2,23 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/services/api";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const emptyForm = { name: "", email: "", phone: "", password: "", role: "student" };
 
+const initialOf = (name) => name?.trim()?.[0]?.toUpperCase() || "?";
+
+const ROLE_BADGE = {
+  admin: "bg-primary/10 text-primary",
+  teacher: "bg-gold/20 text-navy dark:text-gold",
+  student: "bg-muted text-muted-foreground",
+};
+
 const AdminStudents = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -66,6 +77,25 @@ const AdminStudents = () => {
       loadUsers();
     } catch (err) {
       setMessage(err.response?.data?.Error || "Failed to update user");
+    }
+  };
+
+  const handleRoleChange = async (id, role, name) => {
+    if (
+      role === "admin" &&
+      !window.confirm(`Make ${name} an admin? They will get full access to this dashboard.`)
+    ) {
+      return;
+    }
+    setMessage("");
+    try {
+      const res = await api.patch(`/users/${id}/role`, { role });
+      setMessage(res.data.message);
+      loadUsers();
+    } catch (err) {
+      setMessage(
+        err.response?.data?.Error || err.response?.data?.message || "Failed to update role",
+      );
     }
   };
 
@@ -154,50 +184,61 @@ const AdminStudents = () => {
       {error && <p className="text-destructive">{error}</p>}
 
       {!loading && !error && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="text-left border-b-2 border-gold bg-navy text-white">
-                <th className="py-2 pr-4 pl-2">Name</th>
-                <th className="py-2 pr-4">Email</th>
-                <th className="py-2 pr-4">Phone</th>
-                <th className="py-2 pr-4">Role</th>
-                <th className="py-2 pr-4">Verified</th>
-                <th className="py-2 pr-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((u, idx) => (
-                <tr
-                  key={u._id}
-                  className={cn("border-b", idx % 2 === 1 && "bg-light-blue dark:bg-accent")}
-                >
-                  <td className="py-2 pr-4 pl-2">
+        <div className="space-y-3">
+          {filtered.map((u) => {
+            const isSelf = currentUser?._id === u._id;
+
+            return (
+              <Card key={u._id}>
+                {/* Horizontal layout: avatar, then details, then actions. Wraps
+                    to stacked on narrow screens rather than overflowing. */}
+                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <Avatar size="lg" className="size-14 shrink-0">
+                    <AvatarImage src={u.profileImage || undefined} alt={u.name} />
+                    <AvatarFallback>{initialOf(u.name)}</AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex-1 min-w-0 space-y-1">
                     {editingId === u._id ? (
-                      <Input
-                        value={editForm.name}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="h-8"
-                      />
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <Input
+                          value={editForm.name}
+                          onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                          className="h-8 text-sm"
+                          placeholder="Name"
+                        />
+                        <Input
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                          className="h-8 text-sm"
+                          placeholder="Phone"
+                        />
+                      </div>
                     ) : (
-                      u.name
+                      <>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-medium truncate">{u.name}</h3>
+                          <span
+                            className={cn(
+                              "text-xs px-2 py-0.5 rounded-full capitalize",
+                              ROLE_BADGE[u.role] || ROLE_BADGE.student,
+                            )}
+                          >
+                            {u.role}
+                          </span>
+                          {!u.isVerified && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                              Unverified
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">{u.email}</p>
+                        <p className="text-xs text-muted-foreground">{u.phone || "No phone"}</p>
+                      </>
                     )}
-                  </td>
-                  <td className="py-2 pr-4">{u.email}</td>
-                  <td className="py-2 pr-4">
-                    {editingId === u._id ? (
-                      <Input
-                        value={editForm.phone}
-                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        className="h-8"
-                      />
-                    ) : (
-                      u.phone || "-"
-                    )}
-                  </td>
-                  <td className="py-2 pr-4">{u.role}</td>
-                  <td className="py-2 pr-4">{u.isVerified ? "Yes" : "No"}</td>
-                  <td className="py-2 pr-4 space-x-2 whitespace-nowrap">
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap shrink-0">
                     {editingId === u._id ? (
                       <>
                         <Button size="xs" onClick={() => handleUpdate(u._id)}>
@@ -209,6 +250,17 @@ const AdminStudents = () => {
                       </>
                     ) : (
                       <>
+                        <select
+                          className="border rounded-md px-2 py-1 text-xs bg-background disabled:opacity-50"
+                          value={u.role}
+                          disabled={isSelf}
+                          title={isSelf ? "You cannot change your own role" : "Change role"}
+                          onChange={(e) => handleRoleChange(u._id, e.target.value, u.name)}
+                        >
+                          <option value="student">Student</option>
+                          <option value="teacher">Teacher</option>
+                          <option value="admin">Admin</option>
+                        </select>
                         <Button size="xs" variant="outline" onClick={() => startEdit(u)}>
                           Edit
                         </Button>
@@ -217,16 +269,22 @@ const AdminStudents = () => {
                             Verify
                           </Button>
                         )}
-                        <Button size="xs" variant="destructive" onClick={() => handleDelete(u._id)}>
+                        <Button
+                          size="xs"
+                          variant="destructive"
+                          disabled={isSelf}
+                          title={isSelf ? "You cannot delete your own account" : "Delete user"}
+                          onClick={() => handleDelete(u._id)}
+                        >
                           Delete
                         </Button>
                       </>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
           {filtered.length === 0 && (
             <p className="text-center text-muted-foreground py-6">No users found.</p>
           )}

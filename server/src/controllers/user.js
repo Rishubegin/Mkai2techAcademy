@@ -287,6 +287,54 @@ const verifyUser = async (req, res) => {
   }
 };
 
+// Role changes are deliberately kept out of updateUser: that endpoint is also
+// reachable by a user editing themselves, so allowing `role` there would let
+// anyone promote themselves to admin.
+const updateUserRole = async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  try {
+    const ALLOWED_ROLES = ["student", "teacher", "admin"];
+
+    if (!ALLOWED_ROLES.includes(role)) {
+      throw new Error("Role must be one of: student, teacher, admin");
+    }
+
+    // An admin cannot change their own role. Besides preventing an accidental
+    // self-demotion lockout, this guarantees at least one admin always
+    // remains: whoever performs the last demotion still holds the role.
+    if (req.user._id.toString() === id) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot change your own role",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { role },
+      { returnDocument: "after", runValidators: true },
+    );
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Role updated to ${role}`,
+      user,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: "Error updating role",
+      Error: err.message,
+    });
+  }
+};
+
 const getUserById = async (req, res) => {
   const id = req.params.id;
 
@@ -412,6 +460,7 @@ module.exports = {
   updateProfileImage,
   uploadProfileImage,
   verifyUser,
+  updateUserRole,
   getUserById,
   updateUser,
   deleteUser,

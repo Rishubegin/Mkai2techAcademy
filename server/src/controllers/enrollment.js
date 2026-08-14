@@ -92,25 +92,28 @@ const selfEnroll = async (req, res) => {
   }
 };
 
-const selfUnenroll = async (req, res) => {
+// Admin-only. Students deliberately cannot remove their own enrollment:
+// enrollment follows an offline paper application and fee payment, so
+// withdrawing is an administrative decision, not a self-service action.
+const removeEnrollment = async (req, res) => {
   try {
     const removed = await Enrollment.findOneAndDelete({
-      student: req.user._id,
+      student: req.params.studentId,
       course: req.params.courseId,
     });
 
     if (!removed) {
-      throw new Error("You are not enrolled in this course");
+      throw new Error("This student is not enrolled in this course");
     }
 
     res.status(200).json({
       success: true,
-      message: "Unenrolled successfully",
+      message: "Enrollment removed successfully",
     });
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: "Error unenrolling from course",
+      message: "Error removing enrollment",
       Error: err.message,
     });
   }
@@ -174,6 +177,6 @@ module.exports = {
   listEnrollmentsForStudent,
   listEnrollmentsForCourse,
   selfEnroll,
-  selfUnenroll,
+  removeEnrollment,
   updateEnrollment,
 };

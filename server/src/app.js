@@ -48,11 +48,19 @@ app.use(
 // and the strict per-IP auth limit would throttle the test suite's own
 // repeated login calls.
 if (process.env.NODE_ENV !== "test") {
-  // Global rate limiter
+  // Scoped to /api rather than mounted globally: the static /uploads routes
+  // below serve plain files (avatars, gallery, event images), and a single
+  // page can pull dozens of them — counting those against the quota exhausted
+  // it long before the API calls did.
+  //
+  // Dev gets a much larger budget because StrictMode double-invokes every
+  // effect, so each page load costs twice the requests, and hot reloads
+  // repeat them.
   app.use(
+    "/api",
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      max: 100,
+      max: process.env.NODE_ENV === "production" ? 100 : 1000,
       standardHeaders: true,
       legacyHeaders: false,
     }),

@@ -28,9 +28,9 @@ const HomePage = () => {
 };
 
 const images = [
-  "/hero_section_1.png",
-  "/hero_section_2.png",
-  "/hero_section_3.png",
+  "/hero_section_1.jpg",
+  "/hero_section_2.jpg",
+  "/hero_section_3.jpg",
 ];
 
 const HeroSection = () => {

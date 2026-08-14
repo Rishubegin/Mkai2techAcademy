@@ -12,7 +12,10 @@ const FAQPage = () => {
   useEffect(() => {
     setLoading(true);
     api
-      .get("/faqs", { params: category ? { category } : {} })
+      // The list endpoint pages by default; the public page shows every FAQ at
+      // once and derives its category chips from the full list, so ask for the
+      // maximum the endpoint allows rather than a single page.
+      .get("/faqs", { params: { limit: 100, ...(category ? { category } : {}) } })
       .then((res) => setFaqs(res.data.faqs))
       .finally(() => setLoading(false));
   }, [category]);

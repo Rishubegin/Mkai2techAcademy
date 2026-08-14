@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const User = require("../models/user");
 const { uploadBuffer } = require("../utils/cloudinaryUpload");
+const { getPaginationParams, buildPagination, escapeRegex } = require("../utils/pagination");
 
 const getCurrentUser = (req, res) => {
   try {
@@ -62,15 +63,29 @@ const searchUsers = async (req, res) => {
 
 const listUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const { page, limit, skip } = getPaginationParams(req.query);
 
-    if (!users) {
-      throw new Error("Error finding users");
+    const filter = {};
+    if (req.query.role) filter.role = req.query.role;
+    // Searching server-side rather than filtering the loaded page keeps the
+    // admin's search box working across every user, not just the current page.
+    if (req.query.search?.trim()) {
+      const term = escapeRegex(req.query.search.trim());
+      filter.$or = [
+        { name: { $regex: term, $options: "i" } },
+        { email: { $regex: term, $options: "i" } },
+      ];
     }
+
+    const [users, total] = await Promise.all([
+      User.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      User.countDocuments(filter),
+    ]);
 
     res.status(200).json({
       success: true,
       users,
+      pagination: buildPagination({ page, limit, total }),
     });
   } catch (err) {
     res.status(400).json({

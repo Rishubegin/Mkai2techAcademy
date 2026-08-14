@@ -1,5 +1,6 @@
 const FAQ = require("../models/faq");
 const { isRequestFromAdmin } = require("../middlewares/optionalAdmin");
+const { getPaginationParams, buildPagination } = require("../utils/pagination");
 
 const listFaqs = async (req, res) => {
   try {
@@ -16,12 +17,18 @@ const listFaqs = async (req, res) => {
     const filter = isAdminRequest ? {} : { isActive: true };
     if (req.query.category) filter.category = req.query.category;
 
-    const faqs = await FAQ.find(filter).sort({ displayOrder: 1, createdAt: 1 });
+    const { page, limit, skip } = getPaginationParams(req.query);
+
+    const [faqs, total] = await Promise.all([
+      FAQ.find(filter).sort({ displayOrder: 1, createdAt: 1 }).skip(skip).limit(limit),
+      FAQ.countDocuments(filter),
+    ]);
 
     res.status(200).json({
       success: true,
       message: "FAQs fetched successfully",
       faqs,
+      pagination: buildPagination({ page, limit, total }),
     });
   } catch (err) {
     res.status(400).json({

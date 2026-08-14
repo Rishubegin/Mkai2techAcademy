@@ -190,15 +190,23 @@ const StudentDashboard = () => {
                 <CardContent className="p-4 space-y-2">
                   <h3 className="font-medium">{app.course?.title}</h3>
                   <p className="text-xs text-muted-foreground">
-                    Submitted {new Date(app.createdAt).toLocaleDateString()}
+                    {app.status === "draft"
+                      ? `Not submitted yet · saved ${new Date(app.updatedAt).toLocaleDateString()}`
+                      : `Submitted ${new Date(app.createdAt).toLocaleDateString()}`}
                   </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDownloadApplication(app._id)}
-                  >
-                    Download Form (PDF)
-                  </Button>
+                  {app.status === "draft" ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`/courses/${app.course?._id}/enroll`}>Continue Form</Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDownloadApplication(app._id)}
+                    >
+                      Download Form (PDF)
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}

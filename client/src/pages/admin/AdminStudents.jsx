@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Pagination from "@/components/common/Pagination";
 import api from "@/services/api";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,11 @@ const AdminStudents = () => {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  // Debounced copy of `search` — the list is filtered server-side now, so the
+  // request waits for a pause in typing instead of firing on every keystroke.
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -32,23 +38,31 @@ const AdminStudents = () => {
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/users");
+      const res = await api.get("/users", {
+        params: { page, limit: 10, ...(searchTerm ? { search: searchTerm } : {}) },
+      });
       setUsers(res.data.users);
+      setPagination(res.data.pagination);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load users");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, searchTerm]);
 
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
-  const filtered = users.filter((u) => {
-    const q = search.toLowerCase();
-    return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(search);
+      // A new search starts from the first page of its own results.
+      setPage(1);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -112,7 +126,13 @@ const AdminStudents = () => {
     if (!window.confirm("Delete this user? This cannot be undone.")) return;
     try {
       await api.delete(`/users/${id}`);
-      loadUsers();
+      // Removing the only row on the last page would otherwise strand the admin
+      // on a page that no longer exists.
+      if (users.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        loadUsers();
+      }
     } catch (err) {
       setMessage(err.response?.data?.Error || "Failed to delete user");
     }
@@ -185,7 +205,7 @@ const AdminStudents = () => {
 
       {!loading && !error && (
         <div className="space-y-3">
-          {filtered.map((u) => {
+          {users.map((u) => {
             const isSelf = currentUser?._id === u._id;
 
             return (
@@ -285,9 +305,11 @@ const AdminStudents = () => {
               </Card>
             );
           })}
-          {filtered.length === 0 && (
+          {users.length === 0 && (
             <p className="text-center text-muted-foreground py-6">No users found.</p>
           )}
+
+          <Pagination pagination={pagination} onPageChange={setPage} label="users" />
         </div>
       )}
     </div>

@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Pagination from "@/components/common/Pagination";
 import api from "@/services/api";
 
 const AdminTestimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -12,14 +15,15 @@ const AdminTestimonials = () => {
   const loadTestimonials = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/testimonials", { params: { all: true, limit: 50 } });
+      const res = await api.get("/testimonials", { params: { all: true, page, limit: 10 } });
       setTestimonials(res.data.testimonials);
+      setPagination(res.data.pagination);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load testimonials");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     loadTestimonials();
@@ -47,7 +51,13 @@ const AdminTestimonials = () => {
     if (!window.confirm("Delete this testimonial?")) return;
     try {
       await api.delete(`/testimonials/${id}`);
-      loadTestimonials();
+      // Removing the only row on the last page would otherwise strand the admin
+      // on a page that no longer exists.
+      if (testimonials.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        loadTestimonials();
+      }
     } catch (err) {
       setMessage(err.response?.data?.Error || "Failed to delete testimonial");
     }
@@ -108,6 +118,8 @@ const AdminTestimonials = () => {
           </Card>
         ))}
       </div>
+
+      <Pagination pagination={pagination} onPageChange={setPage} label="testimonials" />
     </div>
   );
 };

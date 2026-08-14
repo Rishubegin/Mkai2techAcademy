@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Pagination from "@/components/common/Pagination";
 import api from "@/services/api";
 import CourseRosterPanel from "./CourseRosterPanel";
 
@@ -265,6 +266,8 @@ const CourseContentPanel = ({ course, onChanged }) => {
 
 const AdminCourses = () => {
   const [courses, setCourses] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(1);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -283,17 +286,18 @@ const AdminCourses = () => {
     setLoading(true);
     try {
       const [coursesRes, teachersRes] = await Promise.all([
-        api.get("/courses", { params: { limit: 100 } }),
+        api.get("/courses", { params: { page, limit: 10 } }),
         api.get("/teacher-profiles"),
       ]);
       setCourses(coursesRes.data.courses);
+      setPagination(coursesRes.data.pagination);
       setTeachers(teachersRes.data.profiles);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load courses");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     loadCourses();
@@ -376,7 +380,13 @@ const AdminCourses = () => {
     if (!window.confirm("Delete this course? This cannot be undone.")) return;
     try {
       await api.delete(`/courses/${id}`);
-      loadCourses();
+      // Removing the only row on the last page would otherwise strand the admin
+      // on a page that no longer exists.
+      if (courses.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        loadCourses();
+      }
     } catch (err) {
       setMessage(err.response?.data?.Error || "Failed to delete course");
     }
@@ -608,6 +618,8 @@ const AdminCourses = () => {
           {courses.length === 0 && (
             <p className="text-center text-muted-foreground py-6">No courses yet.</p>
           )}
+
+          <Pagination pagination={pagination} onPageChange={setPage} label="courses" />
         </div>
       )}
     </div>

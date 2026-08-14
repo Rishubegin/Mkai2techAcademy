@@ -24,11 +24,34 @@ enrollmentApplicationRouter.post(
   enrollmentApplicationController.createApplication,
 );
 
+// Save a single section of the form without submitting it (student only). The
+// form is long, so each section gets its own save button and the applicant can
+// come back to an unfinished draft later.
+enrollmentApplicationRouter.post(
+  "/enrollment-applications/draft",
+  userAuth,
+  authorize("student"),
+  imageUpload.fields([
+    { name: "photo", maxCount: 1 },
+    { name: "signature", maxCount: 1 },
+    { name: "guardianSignature", maxCount: 1 },
+  ]),
+  enrollmentApplicationController.saveDraft,
+);
+
 // List the logged-in student's own applications
 enrollmentApplicationRouter.get(
   "/enrollment-applications/my",
   userAuth,
   enrollmentApplicationController.listMyApplications,
+);
+
+// The logged-in student's saved form for one course, used to reopen a draft.
+// Declared before "/:id" so "my" isn't parsed as an application id.
+enrollmentApplicationRouter.get(
+  "/enrollment-applications/my/:courseId",
+  userAuth,
+  enrollmentApplicationController.getMyApplicationForCourse,
 );
 
 // List all applications (admin only), optional ?course= filter

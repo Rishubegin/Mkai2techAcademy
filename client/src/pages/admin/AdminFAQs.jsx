@@ -3,12 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Pagination from "@/components/common/Pagination";
 import api from "@/services/api";
 
 const emptyForm = { question: "", answer: "", category: "General" };
 
 const AdminFAQs = () => {
   const [faqs, setFaqs] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -18,14 +21,15 @@ const AdminFAQs = () => {
   const loadFaqs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/faqs", { params: { all: true } });
+      const res = await api.get("/faqs", { params: { all: true, page, limit: 10 } });
       setFaqs(res.data.faqs);
+      setPagination(res.data.pagination);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load FAQs");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     loadFaqs();
@@ -58,7 +62,13 @@ const AdminFAQs = () => {
     if (!window.confirm("Delete this FAQ?")) return;
     try {
       await api.delete(`/faqs/${id}`);
-      loadFaqs();
+      // Removing the only row on the last page would otherwise strand the admin
+      // on a page that no longer exists.
+      if (faqs.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        loadFaqs();
+      }
     } catch (err) {
       setMessage(err.response?.data?.Error || "Failed to delete FAQ");
     }
@@ -134,6 +144,8 @@ const AdminFAQs = () => {
           {faqs.length === 0 && (
             <p className="text-center text-muted-foreground py-6">No FAQs yet.</p>
           )}
+
+          <Pagination pagination={pagination} onPageChange={setPage} label="FAQs" />
         </div>
       )}
     </div>

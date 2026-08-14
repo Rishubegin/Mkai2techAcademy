@@ -1,23 +1,27 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import Pagination from "@/components/common/Pagination";
 import api from "@/services/api";
 
 const AdminContactForms = () => {
   const [forms, setForms] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const loadForms = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/contact", { params: { limit: 100 } });
+      const res = await api.get("/contact", { params: { page, limit: 10 } });
       setForms(res.data.contactForms);
+      setPagination(res.data.pagination);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load inquiries");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     loadForms();
@@ -72,6 +76,8 @@ const AdminContactForms = () => {
           </Card>
         ))}
       </div>
+
+      <Pagination pagination={pagination} onPageChange={setPage} label="inquiries" />
     </div>
   );
 };

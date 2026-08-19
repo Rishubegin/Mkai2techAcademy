@@ -33,12 +33,6 @@ courseRouter.get(
 // Search courses by keyword (title/description)
 courseRouter.get("/courses/search", courseController.searchCourses);
 
-// Courses by category (path param variant)
-courseRouter.get("/courses/category/:category", courseController.listByCategory);
-
-// Courses by instructor
-courseRouter.get("/courses/instructor/:teacherId", courseController.listByInstructor);
-
 // List all courses (filters + pagination)
 courseRouter.get("/courses", courseController.listCourses);
 
@@ -57,14 +51,6 @@ courseRouter.patch(
   authorize("admin"),
   imageUpload.single("image"),
   courseController.updateImage,
-);
-
-// Update syllabus (admin only)
-courseRouter.patch(
-  "/courses/:id/syllabus",
-  userAuth,
-  authorize("admin"),
-  courseController.updateSyllabus,
 );
 
 // Get single course

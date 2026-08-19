@@ -162,42 +162,6 @@ const searchCourses = async (req, res) => {
   }
 };
 
-const listByCategory = async (req, res) => {
-  try {
-    const courses = await Course.find({ category: req.params.category });
-
-    res.status(200).json({
-      success: true,
-      message: "Courses fetched successfully",
-      courses,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error fetching courses by category",
-      Error: err.message,
-    });
-  }
-};
-
-const listByInstructor = async (req, res) => {
-  try {
-    const courses = await Course.find({ instructor: req.params.teacherId });
-
-    res.status(200).json({
-      success: true,
-      message: "Courses fetched successfully",
-      courses,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error fetching courses by instructor",
-      Error: err.message,
-    });
-  }
-};
-
 const listCourses = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -289,38 +253,6 @@ const updateImage = async (req, res) => {
       res.status(400).json({
         success: false,
         message: "Error updating course image",
-        Error: err.message,
-      });
-    }
-  };
-
-const updateSyllabus = async (req, res) => {
-    try {
-      const { syllabus } = req.body;
-
-      if (!Array.isArray(syllabus)) {
-        throw new Error("syllabus must be an array");
-      }
-
-      const course = await Course.findByIdAndUpdate(
-        req.params.id,
-        { syllabus },
-        { returnDocument: "after", runValidators: true },
-      );
-
-      if (!course) {
-        throw new Error("Course not found");
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Syllabus updated successfully",
-        course,
-      });
-    } catch (err) {
-      res.status(400).json({
-        success: false,
-        message: "Error updating syllabus",
         Error: err.message,
       });
     }
@@ -431,13 +363,11 @@ module.exports = {
   listCategories,
   getStats,
   searchCourses,
-  listByCategory,
-  listByInstructor,
   listCourses,
   updateFeatured,
   updateImage,
-  updateSyllabus,
   getCourseById,
   updateCourse,
   deleteCourse,
 };
+

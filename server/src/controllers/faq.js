@@ -85,32 +85,6 @@ const markHelpful = async (req, res) => {
   }
 };
 
-const getFaqById = async (req, res) => {
-  try {
-    const faq = await FAQ.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { views: 1 } },
-      { returnDocument: "after" },
-    ).populate("course", "title");
-
-    if (!faq) {
-      throw new Error("FAQ not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "FAQ fetched successfully",
-      faq,
-    });
-  } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "Error fetching FAQ",
-      Error: err.message,
-    });
-  }
-};
-
 const updateFaq = async (req, res) => {
   try {
     const ALLOWED_UPDATES = [
@@ -176,7 +150,7 @@ module.exports = {
   listFaqs,
   createFaq,
   markHelpful,
-  getFaqById,
   updateFaq,
   deleteFaq,
 };
+

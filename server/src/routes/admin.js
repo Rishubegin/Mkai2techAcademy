@@ -41,13 +41,4 @@ adminRouter.get(
   adminController.exportEnrollments,
 );
 
-// Offline payment collection summary — fees are collected in person, this
-// aggregates what's been recorded so admins can see collected vs. pending.
-adminRouter.get(
-  "/admin/analytics/payments",
-  userAuth,
-  authorize("admin"),
-  adminController.getPaymentAnalytics,
-);
-
 module.exports = adminRouter;

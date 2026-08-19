@@ -156,65 +156,10 @@ const exportEnrollments = async (req, res) => {
     }
   };
 
-const getPaymentAnalytics = async (req, res) => {
-    try {
-      const [summary] = await Enrollment.aggregate([
-        {
-          $lookup: {
-            from: "courses",
-            localField: "course",
-            foreignField: "_id",
-            as: "courseInfo",
-          },
-        },
-        { $unwind: "$courseInfo" },
-        {
-          $project: {
-            paymentStatus: 1,
-            amountPaid: { $ifNull: ["$amountPaid", 0] },
-            expectedFee: {
-              $subtract: ["$courseInfo.fees", { $ifNull: ["$discountApplied", 0] }],
-            },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            totalExpected: { $sum: "$expectedFee" },
-            totalCollected: { $sum: "$amountPaid" },
-            paidCount: { $sum: { $cond: [{ $eq: ["$paymentStatus", "paid"] }, 1, 0] } },
-            partialCount: { $sum: { $cond: [{ $eq: ["$paymentStatus", "partial"] }, 1, 0] } },
-            unpaidCount: { $sum: { $cond: [{ $eq: ["$paymentStatus", "unpaid"] }, 1, 0] } },
-          },
-        },
-      ]);
-
-      const totalExpected = summary?.totalExpected || 0;
-      const totalCollected = summary?.totalCollected || 0;
-
-      res.status(200).json({
-        success: true,
-        message: "Payment summary fetched successfully",
-        totalExpected,
-        totalCollected,
-        totalPending: totalExpected - totalCollected,
-        paidCount: summary?.paidCount || 0,
-        partialCount: summary?.partialCount || 0,
-        unpaidCount: summary?.unpaidCount || 0,
-      });
-    } catch (err) {
-      res.status(400).json({
-        success: false,
-        message: "Error fetching payment summary",
-        Error: err.message,
-      });
-    }
-  };
-
 module.exports = {
   getUserCounts,
   createUser,
   getEnrollmentTrend,
   exportEnrollments,
-  getPaymentAnalytics,
 };
+

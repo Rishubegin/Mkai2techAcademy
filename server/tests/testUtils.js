@@ -15,6 +15,7 @@ const request = require("supertest");
 const app = require("../src/app");
 const connectDB = require("../src/config/database");
 const User = require("../src/models/user");
+const Enrollment = require("../src/models/enrollment");
 
 const connectTestDB = async () => {
   if (mongoose.connection.readyState === 0) {
@@ -57,8 +58,15 @@ const createUserAndLogin = async ({
   return { user, cookie: loginRes.headers["set-cookie"] };
 };
 
+// Enrollment happens through the enrollment-application flow in the app, so
+// there's no plain "enroll" endpoint to call from a test. Setting the record
+// up directly keeps these tests focused on what they actually assert.
+const enrollStudent = (studentId, courseId) =>
+  Enrollment.create({ student: studentId, course: courseId });
+
 module.exports = {
   app,
+  enrollStudent,
   connectTestDB,
   disconnectTestDB,
   clearCollections,

@@ -88,81 +88,8 @@ const listByCourse = async (req, res) => {
   }
 };
 
-const updateReview = async (req, res) => {
-  try {
-    const review = await Review.findById(req.params.id);
-
-    if (!review) {
-      throw new Error("Review not found");
-    }
-    if (review.student.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only update your own review",
-      });
-    }
-
-    const ALLOWED_UPDATES = ["rating", "comment"];
-    const isUpdateAllowed = Object.keys(req.body).every((key) =>
-      ALLOWED_UPDATES.includes(key),
-    );
-    if (!isUpdateAllowed) {
-      throw new Error("Invalid update field");
-    }
-
-    Object.assign(review, req.body);
-    await review.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Review updated successfully",
-      review,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error updating review",
-      Error: err.message,
-    });
-  }
-};
-
-const deleteReview = async (req, res) => {
-  try {
-    const review = await Review.findById(req.params.id);
-
-    if (!review) {
-      throw new Error("Review not found");
-    }
-
-    const isOwner = review.student.toString() === req.user._id.toString();
-    const isAdmin = req.user.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: "You don't have permission to delete this review",
-      });
-    }
-
-    await review.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: "Review deleted successfully",
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error deleting review",
-      Error: err.message,
-    });
-  }
-};
-
 module.exports = {
   createReview,
   listByCourse,
-  updateReview,
-  deleteReview,
 };
+

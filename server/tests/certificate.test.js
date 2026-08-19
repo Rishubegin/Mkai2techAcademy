@@ -5,6 +5,7 @@ const {
   disconnectTestDB,
   clearCollections,
   createUserAndLogin,
+  enrollStudent,
 } = require("./testUtils");
 
 beforeAll(async () => {
@@ -27,9 +28,7 @@ const enrollAndComplete = async (adminCookie, studentCookie, studentId) => {
 
   const courseId = courseRes.body.course._id;
 
-  await request(app)
-    .post(`/api/courses/${courseId}/enroll`)
-    .set("Cookie", studentCookie);
+  await enrollStudent(studentId, courseId);
 
   await request(app)
     .patch(`/api/courses/${courseId}/enrollments/${studentId}`)
@@ -55,9 +54,7 @@ describe("Certificates", () => {
       .set("Cookie", adminCookie)
       .send({ title: "Incomplete Course", category: "Test", fees: 1000 });
 
-    await request(app)
-      .post(`/api/courses/${courseRes.body.course._id}/enroll`)
-      .set("Cookie", studentCookie);
+    await enrollStudent(student._id, courseRes.body.course._id);
 
     const res = await request(app)
       .post(`/api/certificates/${courseRes.body.course._id}/${student._id}`)

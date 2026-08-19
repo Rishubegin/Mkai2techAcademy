@@ -22,14 +22,6 @@ enrollmentRouter.get(
   enrollmentController.listEnrollmentsForCourse,
 );
 
-// Self enroll (student). There is deliberately no self-unenroll — removing an
-// enrollment is admin-only, see the DELETE route below.
-enrollmentRouter.post(
-  "/courses/:courseId/enroll",
-  userAuth,
-  enrollmentController.selfEnroll,
-);
-
 // Remove a student's enrollment (admin only)
 enrollmentRouter.delete(
   "/courses/:courseId/enrollments/:studentId",

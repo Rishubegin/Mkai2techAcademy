@@ -17,9 +17,6 @@ faqRouter.post("/faqs", userAuth, authorize("admin"), faqController.createFaq);
 // Mark as helpful (public)
 faqRouter.post("/faqs/:id/helpful", faqController.markHelpful);
 
-// Get single FAQ (public) — also increments view count
-faqRouter.get("/faqs/:id", faqController.getFaqById);
-
 // Update FAQ (admin only)
 faqRouter.patch("/faqs/:id", userAuth, authorize("admin"), faqController.updateFaq);
 

@@ -11,18 +11,6 @@ const teacherRouter = express.Router();
 // Create teacher profile (admin, or the teacher creating their own profile)
 teacherRouter.post("/teacher-profiles", userAuth, teacherController.createProfile);
 
-// Stats
-teacherRouter.get("/teacher-profiles/stats", teacherController.getStats);
-
-// Search teachers (qualification, bio, specialization)
-teacherRouter.get("/teacher-profiles/search", teacherController.searchProfiles);
-
-// Get profile by linked user id
-teacherRouter.get(
-  "/teacher-profiles/user/:userId",
-  teacherController.getProfileByUserId,
-);
-
 // List all teacher profiles (with optional specialization/experience filters)
 teacherRouter.get("/teacher-profiles", teacherController.listProfiles);
 
@@ -33,9 +21,6 @@ teacherRouter.patch(
   imageUpload.single("photo"),
   teacherController.updatePhoto,
 );
-
-// Get single profile
-teacherRouter.get("/teacher-profiles/:profileId", teacherController.getProfileById);
 
 // Update profile (owner or admin)
 teacherRouter.patch(

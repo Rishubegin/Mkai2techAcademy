@@ -5,6 +5,7 @@ const {
   disconnectTestDB,
   clearCollections,
   createUserAndLogin,
+  enrollStudent,
 } = require("./testUtils");
 
 beforeAll(async () => {
@@ -29,26 +30,6 @@ const createCourse = async (adminCookie) => {
 };
 
 describe("Enrollment removal is admin-only", () => {
-  it("does not expose a self-unenroll route", async () => {
-    const { cookie: adminCookie } = await createUserAndLogin({
-      email: "enrolladmin1@example.com",
-      role: "admin",
-    });
-    const { cookie: studentCookie } = await createUserAndLogin({
-      email: "enrollstudent1@example.com",
-      role: "student",
-    });
-    const courseId = await createCourse(adminCookie);
-
-    await request(app).post(`/api/courses/${courseId}/enroll`).set("Cookie", studentCookie);
-
-    const res = await request(app)
-      .delete(`/api/courses/${courseId}/enroll`)
-      .set("Cookie", studentCookie);
-
-    expect(res.status).toBe(404);
-  });
-
   it("forbids a student from removing their own enrollment", async () => {
     const { cookie: adminCookie } = await createUserAndLogin({
       email: "enrolladmin2@example.com",
@@ -60,7 +41,7 @@ describe("Enrollment removal is admin-only", () => {
     });
     const courseId = await createCourse(adminCookie);
 
-    await request(app).post(`/api/courses/${courseId}/enroll`).set("Cookie", studentCookie);
+    await enrollStudent(student._id, courseId);
 
     const res = await request(app)
       .delete(`/api/courses/${courseId}/enrollments/${student._id}`)
@@ -86,7 +67,7 @@ describe("Enrollment removal is admin-only", () => {
     });
     const courseId = await createCourse(adminCookie);
 
-    await request(app).post(`/api/courses/${courseId}/enroll`).set("Cookie", studentCookie);
+    await enrollStudent(student._id, courseId);
 
     const res = await request(app)
       .delete(`/api/courses/${courseId}/enrollments/${student._id}`)
@@ -100,21 +81,4 @@ describe("Enrollment removal is admin-only", () => {
     expect(listRes.body.enrollments).toHaveLength(0);
   });
 
-  it("students can still enrol themselves", async () => {
-    const { cookie: adminCookie } = await createUserAndLogin({
-      email: "enrolladmin4@example.com",
-      role: "admin",
-    });
-    const { cookie: studentCookie } = await createUserAndLogin({
-      email: "enrollstudent4@example.com",
-      role: "student",
-    });
-    const courseId = await createCourse(adminCookie);
-
-    const res = await request(app)
-      .post(`/api/courses/${courseId}/enroll`)
-      .set("Cookie", studentCookie);
-
-    expect(res.status).toBe(201);
-  });
 });

@@ -21,46 +21,6 @@ const getCurrentUser = (req, res) => {
   }
 };
 
-const searchUsers = async (req, res) => {
-  const query = req.query;
-
-  try {
-    if (Object.keys(query).length === 0) {
-      throw new Error("Atleast One parameter is required");
-    }
-    const ALLOWED_QUERY = ["name", "email", "role", "isVerified", "phone"];
-
-    const isQueryAllowed = Object.keys(query).every((key) =>
-      ALLOWED_QUERY.includes(key),
-    );
-
-    if (!isQueryAllowed) {
-      throw new Error("Invalid Query parameter");
-    }
-
-    if (query.isVerified !== undefined) {
-      query.isVerified = query.isVerified === "true";
-    }
-
-    const users = await User.find(query);
-
-    if (users.length === 0) {
-      throw new Error("No Users found");
-    }
-    res.status(200).json({
-      success: true,
-      message: "Users fetched successfully",
-      users,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error fetching users",
-      Error: err.message,
-    });
-  }
-};
-
 const listUsers = async (req, res) => {
   try {
     const { page, limit, skip } = getPaginationParams(req.query);
@@ -176,49 +136,6 @@ const changePassword = async (req, res) => {
     res.status(400).json({
       success: false,
       message: "Error changing Password",
-      Error: err.message,
-    });
-  }
-};
-
-const updateProfileImage = async (req, res) => {
-  const { id } = req.params;
-  const { profileImage } = req.body;
-
-  try {
-    const isSelf = req.user._id.toString() === id;
-    const isAdmin = req.user.role === "admin";
-
-    if (!isSelf && !isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: "You don't have permission to update this user",
-      });
-    }
-
-    if (!profileImage) {
-      throw new Error("profileImage URL is required");
-    }
-
-    const user = await User.findByIdAndUpdate(
-      id,
-      { profileImage },
-      { returnDocument: "after", runValidators: true },
-    );
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Profile image updated successfully",
-      user,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error updating profile image",
       Error: err.message,
     });
   }
@@ -350,34 +267,6 @@ const updateUserRole = async (req, res) => {
   }
 };
 
-const getUserById = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    if (!id) {
-      throw new Error("id is required");
-    }
-
-    const user = await User.findById(id);
-
-    if (!user) {
-      throw new Error("User not found!");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "User fetched successfully",
-      user,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error finding User",
-      Error: err.message,
-    });
-  }
-};
-
 const updateUser = async (req, res) => {
   const { id } = req.params;
   const data = { ...req.body };
@@ -468,15 +357,13 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   getCurrentUser,
-  searchUsers,
   listUsers,
   verifyPassword,
   changePassword,
-  updateProfileImage,
   uploadProfileImage,
   verifyUser,
   updateUserRole,
-  getUserById,
   updateUser,
   deleteUser,
 };
+

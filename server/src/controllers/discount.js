@@ -56,42 +56,6 @@ const listDiscounts = async (req, res) => {
   }
 };
 
-const validateDiscount = async (req, res) => {
-    try {
-      const { code, amount } = req.query;
-
-      if (!code) {
-        throw new Error("code query parameter is required");
-      }
-
-      const discount = await DiscountCode.findOne({ code: code.trim().toUpperCase() });
-
-      if (!discount || !discount.isValidNow()) {
-        return res.status(404).json({
-          success: false,
-          message: "Invalid, inactive, or expired discount code",
-        });
-      }
-
-      const baseAmount = Number(amount) || 0;
-      const discountAmount = discount.applyTo(baseAmount);
-
-      res.status(200).json({
-        success: true,
-        message: "Discount code is valid",
-        discount,
-        discountAmount,
-        finalAmount: baseAmount - discountAmount,
-      });
-    } catch (err) {
-      res.status(400).json({
-        success: false,
-        message: "Error validating discount code",
-        Error: err.message,
-      });
-    }
-  };
-
 const updateDiscount = async (req, res) => {
   try {
     const ALLOWED_UPDATES = ["type", "value", "description", "isActive", "expiresAt"];
@@ -150,7 +114,7 @@ const deleteDiscount = async (req, res) => {
 module.exports = {
   createDiscount,
   listDiscounts,
-  validateDiscount,
   updateDiscount,
   deleteDiscount,
 };
+

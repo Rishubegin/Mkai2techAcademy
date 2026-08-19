@@ -387,38 +387,6 @@ const listApplications = async (req, res) => {
     }
   };
 
-const getApplicationById = async (req, res) => {
-  try {
-    const application = await EnrollmentApplication.findById(req.params.id)
-      .populate("student", "name email phone")
-      .populate("course", "title");
-
-    if (!application) {
-      throw new Error("Application not found");
-    }
-
-    const isOwner = application.student._id.toString() === req.user._id.toString();
-    if (!isOwner && req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "You don't have permission to view this application",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Application fetched successfully",
-      application,
-    });
-  } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "Error fetching application",
-      Error: err.message,
-    });
-  }
-};
-
 const updateApplication = async (req, res) => {
     try {
       const isUpdateAllowed = Object.keys(req.body).every((key) => ALLOWED_FIELDS.includes(key));
@@ -657,8 +625,8 @@ module.exports = {
   getMyApplicationForCourse,
   listMyApplications,
   listApplications,
-  getApplicationById,
   updateApplication,
   deleteApplication,
   downloadApplication,
 };
+

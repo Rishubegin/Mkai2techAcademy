@@ -18,10 +18,4 @@ reviewRouter.post(
 // Get reviews for a course (public) + average rating
 reviewRouter.get("/reviews/course/:courseId", reviewController.listByCourse);
 
-// Update own review
-reviewRouter.patch("/reviews/:id", userAuth, reviewController.updateReview);
-
-// Delete review (owner or admin)
-reviewRouter.delete("/reviews/:id", userAuth, reviewController.deleteReview);
-
 module.exports = reviewRouter;

@@ -5,6 +5,7 @@ const {
   disconnectTestDB,
   clearCollections,
   createUserAndLogin,
+  enrollStudent,
 } = require("./testUtils");
 
 beforeAll(async () => {
@@ -19,15 +20,13 @@ afterAll(async () => {
   await disconnectTestDB();
 });
 
-const enrollStudentInNewCourse = async (adminCookie, studentCookie) => {
+const enrollStudentInNewCourse = async (adminCookie, studentId) => {
   const courseRes = await request(app)
     .post("/api/courses")
     .set("Cookie", adminCookie)
     .send({ title: "Review Test Course", category: "Test", fees: 1000 });
 
-  await request(app)
-    .post(`/api/courses/${courseRes.body.course._id}/enroll`)
-    .set("Cookie", studentCookie);
+  await enrollStudent(studentId, courseRes.body.course._id);
 
   return courseRes.body.course._id;
 };
@@ -61,12 +60,12 @@ describe("Reviews", () => {
       email: "reviewadmin2@example.com",
       role: "admin",
     });
-    const { cookie: studentCookie } = await createUserAndLogin({
+    const { user: student, cookie: studentCookie } = await createUserAndLogin({
       email: "reviewstudent2@example.com",
       role: "student",
     });
 
-    const courseId = await enrollStudentInNewCourse(adminCookie, studentCookie);
+    const courseId = await enrollStudentInNewCourse(adminCookie, student._id);
 
     const createRes = await request(app)
       .post("/api/reviews")
@@ -86,12 +85,12 @@ describe("Reviews", () => {
       email: "reviewadmin3@example.com",
       role: "admin",
     });
-    const { cookie: studentCookie } = await createUserAndLogin({
+    const { user: student, cookie: studentCookie } = await createUserAndLogin({
       email: "reviewstudent3@example.com",
       role: "student",
     });
 
-    const courseId = await enrollStudentInNewCourse(adminCookie, studentCookie);
+    const courseId = await enrollStudentInNewCourse(adminCookie, student._id);
 
     await request(app)
       .post("/api/reviews")

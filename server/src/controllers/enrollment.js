@@ -54,44 +54,6 @@ const listEnrollmentsForCourse = async (req, res) => {
   }
 };
 
-const selfEnroll = async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.courseId).select("_id");
-    if (!course) {
-      throw new Error("Course not found");
-    }
-
-    const existing = await Enrollment.findOne({
-      student: req.user._id,
-      course: course._id,
-    });
-    if (existing) {
-      return res.status(200).json({
-        success: true,
-        message: "Already enrolled in this course",
-        enrollment: existing,
-      });
-    }
-
-    const enrollment = await Enrollment.create({
-      student: req.user._id,
-      course: course._id,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Enrolled successfully",
-      enrollment,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error enrolling in course",
-      Error: err.message,
-    });
-  }
-};
-
 // Admin-only. Students deliberately cannot remove their own enrollment:
 // enrollment follows an offline paper application and fee payment, so
 // withdrawing is an administrative decision, not a self-service action.
@@ -176,7 +138,7 @@ const updateEnrollment = async (req, res) => {
 module.exports = {
   listEnrollmentsForStudent,
   listEnrollmentsForCourse,
-  selfEnroll,
   removeEnrollment,
   updateEnrollment,
 };
+

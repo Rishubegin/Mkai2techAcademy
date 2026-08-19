@@ -24,31 +24,6 @@ const listEvents = async (req, res) => {
   }
 };
 
-const getStats = async (req, res) => {
-  try {
-    const now = new Date();
-    const [totalEvents, upcoming, past] = await Promise.all([
-      Event.countDocuments(),
-      Event.countDocuments({ date: { $gte: now } }),
-      Event.countDocuments({ date: { $lt: now } }),
-    ]);
-
-    res.status(200).json({
-      success: true,
-      message: "Event stats fetched successfully",
-      totalEvents,
-      upcoming,
-      past,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error fetching event stats",
-      Error: err.message,
-    });
-  }
-};
-
 const createEvent = async (req, res) => {
     let uploaded;
     try {
@@ -183,48 +158,6 @@ const getEventById = async (req, res) => {
   }
 };
 
-const updateEvent = async (req, res) => {
-  try {
-    const ALLOWED_UPDATES = [
-      "title",
-      "description",
-      "date",
-      "time",
-      "location",
-      "fee",
-      "maxAttendees",
-      "isFeatured",
-    ];
-    const isUpdateAllowed = Object.keys(req.body).every((key) =>
-      ALLOWED_UPDATES.includes(key),
-    );
-    if (!isUpdateAllowed) {
-      throw new Error("Invalid update field");
-    }
-
-    const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-
-    if (!event) {
-      throw new Error("Event not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Event updated successfully",
-      event,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error updating event",
-      Error: err.message,
-    });
-  }
-};
-
 const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.id);
@@ -250,11 +183,10 @@ const deleteEvent = async (req, res) => {
 
 module.exports = {
   listEvents,
-  getStats,
   createEvent,
   registerForEvent,
   cancelRegistration,
   getEventById,
-  updateEvent,
   deleteEvent,
 };
+

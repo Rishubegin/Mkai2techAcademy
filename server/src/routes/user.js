@@ -17,13 +17,6 @@ const userRouter = express.Router();
 // ---------------------------------------------------------------- reads ----
 userRouter.get("/users/me", userAuth, userController.getCurrentUser);
 
-userRouter.get(
-  "/users/search",
-  userAuth,
-  authorize("admin"),
-  userController.searchUsers,
-);
-
 userRouter.get("/users", userAuth, authorize("admin"), userController.listUsers);
 
 // ------------------------------------------------------------- password ----
@@ -32,13 +25,6 @@ userRouter.post("/users/verify-password", userAuth, userController.verifyPasswor
 userRouter.patch("/users/change-password", userAuth, userController.changePassword);
 
 // -------------------------------------------------------- profile image ----
-
-// Set the profile image from an already-hosted URL.
-userRouter.patch(
-  "/users/:id/profile-image",
-  userAuth,
-  userController.updateProfileImage,
-);
 
 // Upload a profile picture file directly (as opposed to setting a URL)
 userRouter.patch(
@@ -64,9 +50,6 @@ userRouter.patch(
   authorize("admin"),
   userController.updateUserRole,
 );
-
-// ------------------------------------------------- single-user by id (last) ----
-userRouter.get("/users/:id", userAuth, userController.getUserById);
 
 userRouter.patch("/users/:id", userAuth, userController.updateUser);
 

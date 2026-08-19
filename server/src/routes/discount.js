@@ -23,15 +23,6 @@ discountRouter.get(
   discountController.listDiscounts,
 );
 
-// Validate a discount code against an amount (admin only — used while
-// recording an offline payment, not a public checkout endpoint)
-discountRouter.get(
-  "/discounts/validate",
-  userAuth,
-  authorize("admin"),
-  discountController.validateDiscount,
-);
-
 // Update discount code (admin only)
 discountRouter.patch(
   "/discounts/:id",

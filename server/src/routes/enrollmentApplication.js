@@ -62,13 +62,6 @@ enrollmentApplicationRouter.get(
   enrollmentApplicationController.listApplications,
 );
 
-// Get a single application (owner or admin)
-enrollmentApplicationRouter.get(
-  "/enrollment-applications/:id",
-  userAuth,
-  enrollmentApplicationController.getApplicationById,
-);
-
 // Update an application (admin only)
 enrollmentApplicationRouter.patch(
   "/enrollment-applications/:id",

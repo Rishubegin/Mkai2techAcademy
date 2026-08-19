@@ -11,14 +11,6 @@ const eventRouter = express.Router();
 // List events (public) — ?upcoming=true / ?past=true filter by date
 eventRouter.get("/events", eventController.listEvents);
 
-// Stats (admin only)
-eventRouter.get(
-  "/events/stats",
-  userAuth,
-  authorize("admin"),
-  eventController.getStats,
-);
-
 // Create event (admin only)
 eventRouter.post(
   "/events",
@@ -46,14 +38,6 @@ eventRouter.delete(
 
 // Get single event (public)
 eventRouter.get("/events/:id", eventController.getEventById);
-
-// Update event (admin only)
-eventRouter.patch(
-  "/events/:id",
-  userAuth,
-  authorize("admin"),
-  eventController.updateEvent,
-);
 
 // Delete event (admin only) — also removes the image from Cloudinary
 eventRouter.delete(

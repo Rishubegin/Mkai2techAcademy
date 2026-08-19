@@ -55,80 +55,6 @@ const createProfile = async (req, res) => {
   }
 };
 
-const getStats = async (req, res) => {
-  try {
-    const totalTeachers = await TeacherProfile.countDocuments();
-    const [avgResult] = await TeacherProfile.aggregate([
-      { $group: { _id: null, avgYears: { $avg: "$experienceYears" } } },
-    ]);
-
-    res.status(200).json({
-      success: true,
-      message: "Teacher stats fetched successfully",
-      totalTeachers,
-      averageExperienceYears: avgResult ? Math.round(avgResult.avgYears * 10) / 10 : 0,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error fetching teacher stats",
-      Error: err.message,
-    });
-  }
-};
-
-const searchProfiles = async (req, res) => {
-  try {
-    const { search } = req.query;
-
-    if (!search) {
-      throw new Error("search query parameter is required");
-    }
-
-    const regex = new RegExp(search, "i");
-
-    const profiles = await TeacherProfile.find({
-      $or: [{ qualification: regex }, { bio: regex }, { specialization: regex }],
-    }).populate("user", "name email profileImage");
-
-    res.status(200).json({
-      success: true,
-      message: "Teacher profiles fetched successfully",
-      profiles,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: "Error searching teacher profiles",
-      Error: err.message,
-    });
-  }
-};
-
-const getProfileByUserId = async (req, res) => {
-  try {
-    const profile = await TeacherProfile.findOne({
-      user: req.params.userId,
-    }).populate("user", "name email profileImage");
-
-    if (!profile) {
-      throw new Error("Teacher profile not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Teacher profile fetched successfully",
-      profile,
-    });
-  } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "Error fetching teacher profile",
-      Error: err.message,
-    });
-  }
-};
-
 const listProfiles = async (req, res) => {
   try {
     const filter = {};
@@ -202,31 +128,6 @@ const updatePhoto = async (req, res) => {
     res.status(400).json({
       success: false,
       message: "Error updating teacher photo",
-      Error: err.message,
-    });
-  }
-};
-
-const getProfileById = async (req, res) => {
-  try {
-    const profile = await TeacherProfile.findById(req.params.profileId).populate(
-      "user",
-      "name email profileImage",
-    );
-
-    if (!profile) {
-      throw new Error("Teacher profile not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Teacher profile fetched successfully",
-      profile,
-    });
-  } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "Error fetching teacher profile",
       Error: err.message,
     });
   }
@@ -314,12 +215,9 @@ const deleteProfile = async (req, res) => {
 
 module.exports = {
   createProfile,
-  getStats,
-  searchProfiles,
-  getProfileByUserId,
   listProfiles,
   updatePhoto,
-  getProfileById,
   updateProfile,
   deleteProfile,
 };
+
